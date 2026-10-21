@@ -12,7 +12,9 @@ import {
 } from '@tecleo/engine';
 import type { UserSettings } from '@tecleo/shared';
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
+
+import { readFirstStorage } from '@/lib/persist-storage';
 
 import { useSettingsStore } from '@/settings/settings-store';
 
@@ -163,7 +165,7 @@ export const usePracticeStore = create<PracticeStore>()(
       version: 1,
       // Se rehidrata en el cliente tras montar (PracticeScreen) para no romper la hidratación de React.
       skipHydration: true,
-      storage: createJSONStorage(() => localStorage),
+      storage: readFirstStorage(),
       // Solo las opciones: el texto en curso no se guarda.
       partialize: (state) => ({ config: state.config }),
       merge: (persisted, current) => ({

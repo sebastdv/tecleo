@@ -2,7 +2,9 @@
 
 import { DEFAULT_SETTINGS, parseSettings, type UserSettings } from '@tecleo/shared';
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
+
+import { readFirstStorage } from '@/lib/persist-storage';
 
 import { SETTINGS_STORAGE_KEY } from './storage-key';
 
@@ -32,7 +34,7 @@ export const useSettingsStore = create<SettingsStore>()(
       version: 1,
       // Se rehidrata en el cliente tras montar (SettingsEffects) para no romper la hidratación.
       skipHydration: true,
-      storage: createJSONStorage(() => localStorage),
+      storage: readFirstStorage(),
       partialize: (state) => ({ settings: state.settings }),
       // Lo guardado puede venir de otra versión o estar corrupto: se valida campo por campo.
       merge: (persisted, current) => ({

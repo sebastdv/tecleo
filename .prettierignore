@@ -6,3 +6,4 @@ coverage/
 next-env.d.ts
 docs/spec.md
 packages/content/src/data/*.json
+apps/server/src/generated/

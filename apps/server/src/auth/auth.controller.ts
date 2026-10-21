@@ -16,9 +16,10 @@ export const REFRESH_COOKIE = 'tecleo_refresh';
  * Límite de registro y login por IP (`AUTH_RATE_LIMIT`, validado al arrancar). Se lee en cada
  * petición porque los decoradores se evalúan antes de que exista la configuración.
  */
-const AUTH_THROTTLE = {
-  default: { limit: () => Number(process.env.AUTH_RATE_LIMIT ?? 10), ttl: 60_000 },
-};
+const authLimit = () => Number(process.env.AUTH_RATE_LIMIT ?? 10);
+const AUTH_THROTTLE = { default: { limit: authLimit, ttl: 60_000 } };
+/** El refresh ocurre en cada carga de página: admite el triple. */
+const REFRESH_THROTTLE = { default: { limit: () => authLimit() * 3, ttl: 60_000 } };
 
 @ApiTags('auth')
 @Controller('auth')
@@ -55,7 +56,7 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(200)
-  @Throttle({ default: { limit: 30, ttl: 60_000 } })
+  @Throttle(REFRESH_THROTTLE)
   @ApiCookieAuth(REFRESH_COOKIE)
   @ApiOperation({ summary: 'Nuevo access token a partir de la cookie (rota el refresh token)' })
   @ApiOkResponse({ schema: zodToOpenApi(authResponseSchema) })

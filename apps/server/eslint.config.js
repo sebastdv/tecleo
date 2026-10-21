@@ -1,6 +1,8 @@
 import { base } from '@tecleo/eslint-config';
 
 export default [
+  // Cliente generado por Prisma (`prisma generate`): no se edita ni se revisa.
+  { ignores: ['src/generated/**'] },
   ...base({ tsconfigRootDir: import.meta.dirname }),
   {
     rules: {

@@ -26,8 +26,10 @@ const envSchema = z.object({
    * `/api` (proxy de Next), así que la cookie va a `/api/auth`.
    */
   REFRESH_COOKIE_PATH: z.string().startsWith('/').default('/api/auth'),
-  /** Intentos por minuto y por IP en registro y login. */
+  /** Intentos por minuto y por IP en registro y login (el refresh admite el triple). */
   AUTH_RATE_LIMIT: z.coerce.number().int().positive().default(10),
+  /** Peticiones por minuto y por IP en el resto de la API. */
+  RATE_LIMIT: z.coerce.number().int().positive().default(120),
   /** Saltos de proxy de confianza para leer la IP real (rate limiting detrás de Next/Render). */
   TRUST_PROXY: z.coerce.number().int().min(0).default(1),
 });

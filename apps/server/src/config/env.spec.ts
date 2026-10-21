@@ -18,6 +18,7 @@ describe('loadEnv', () => {
       REFRESH_TOKEN_TTL_DAYS: 30,
       REFRESH_COOKIE_PATH: '/api/auth',
       AUTH_RATE_LIMIT: 10,
+      RATE_LIMIT: 120,
       TRUST_PROXY: 1,
     });
   });

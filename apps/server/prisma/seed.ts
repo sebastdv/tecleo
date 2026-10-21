@@ -34,7 +34,11 @@ async function main() {
         lengthCategory: quote.lengthCategory,
         difficulty: quote.difficulty,
       };
-      await prisma.text.upsert({ where: { id: quote.id }, create: { id: quote.id, ...data }, update: data });
+      await prisma.text.upsert({
+        where: { id: quote.id },
+        create: { id: quote.id, ...data },
+        update: data,
+      });
       count++;
     }
   }
@@ -50,7 +54,11 @@ async function main() {
       length: snippet.content.length,
       difficulty: textDifficulty(snippet.content, bigrams),
     };
-    await prisma.text.upsert({ where: { id: snippet.id }, create: { id: snippet.id, ...data }, update: data });
+    await prisma.text.upsert({
+      where: { id: snippet.id },
+      create: { id: snippet.id, ...data },
+      update: data,
+    });
     count++;
   }
   console.log(`Textos cargados: ${count}`);

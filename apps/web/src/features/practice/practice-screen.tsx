@@ -1,10 +1,15 @@
 'use client';
 
+import { encodeKeystrokes, stateText } from '@tecleo/engine';
+import type { SubmitResultInput } from '@tecleo/shared';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { useSettings, useSettingsStore } from '@/settings/settings-store';
+
+import { useSaveResult } from '@/results/save-result';
+import { SaveStatusNote } from '@/results/save-status';
 
 import { ResultsPanel } from '../results/results-panel';
 import { LiveStats } from '../typing/live-stats';
@@ -87,6 +92,25 @@ export function PracticeScreen() {
 
   const onAction = useSoundedInput(input, currentTyping);
 
+  // Al terminar, el resultado se guarda (en la cuenta o en este navegador).
+  const payload = useMemo((): SubmitResultInput | null => {
+    if (!typing || !source || !metrics) return null;
+    return {
+      mode: 'practice',
+      textId: source.quote?.id ?? source.snippet?.id ?? null,
+      content: stateText(typing),
+      preserveLines: source.preserveLines,
+      language: source.quote?.language ?? (source.snippet ? 'en' : settings.textLanguage),
+      rules: typing.rules,
+      timeLimitMs: typing.timeLimitMs,
+      practiceKind: config.mode,
+      bots: null,
+      keystrokes: encodeKeystrokes(typing.keystrokes) as SubmitResultInput['keystrokes'],
+      playedAt: new Date().toISOString(),
+    };
+  }, [typing, source, metrics, config.mode, settings.textLanguage]);
+  const saveStatus = useSaveResult(round, payload);
+
   return (
     <div className="flex flex-col gap-10">
       <div data-chrome>
@@ -113,6 +137,7 @@ export function PracticeScreen() {
           metrics={metrics}
           attribution={<Attribution source={source} />}
           ignoreAccents={typing.rules.ignoreAccents}
+          saveNote={<SaveStatusNote status={saveStatus} />}
           onNext={() => {
             void next();
           }}

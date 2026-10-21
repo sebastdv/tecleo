@@ -16,6 +16,8 @@ interface ResultsPanelProps {
   readonly ignoreAccents: boolean;
   readonly onNext: () => void;
   readonly onRepeat: () => void;
+  /** Dónde quedó guardado el resultado (se muestra bajo la atribución). */
+  readonly saveNote?: ReactNode;
   /** Textos de los botones; por defecto los de la práctica. */
   readonly nextLabel?: string;
   readonly repeatLabel?: string;
@@ -50,6 +52,7 @@ export function ResultsPanel({
   onRepeat,
   nextLabel,
   repeatLabel,
+  saveNote,
 }: ResultsPanelProps) {
   const t = useTranslations('results');
   const nextRef = useRef<HTMLButtonElement>(null);
@@ -114,7 +117,10 @@ export function ResultsPanel({
         />
       </motion.dl>
 
-      <p className="text-muted-foreground">{attribution}</p>
+      <div className="flex flex-col gap-1">
+        <p className="text-muted-foreground">{attribution}</p>
+        {saveNote}
+      </div>
 
       <div className="flex gap-3">
         <Button ref={nextRef} onClick={onNext} className="h-10 px-5">

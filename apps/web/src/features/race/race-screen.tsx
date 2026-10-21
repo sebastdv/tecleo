@@ -1,10 +1,15 @@
 'use client';
 
+import { encodeKeystrokes, stateText } from '@tecleo/engine';
+import type { SubmitResultInput } from '@tecleo/shared';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { useSettings, useSettingsStore } from '@/settings/settings-store';
+
+import { useSaveResult } from '@/results/save-result';
+import { SaveStatusNote } from '@/results/save-status';
 
 import { ResultsPanel } from '../results/results-panel';
 import { TypingArea } from '../typing/typing-area';
@@ -37,6 +42,7 @@ export function RaceScreen() {
     metrics,
     outcomes,
     quote,
+    seed,
     round,
     input,
     tick,
@@ -87,6 +93,25 @@ export function RaceScreen() {
   }, [live, leave]);
 
   const onAction = useSoundedInput(input, currentTyping);
+
+  // El servidor regenera los bots con la semilla y los niveles, y decide las posiciones.
+  const payload = useMemo((): SubmitResultInput | null => {
+    if (phase !== 'finished' || !typing || !quote || !metrics) return null;
+    return {
+      mode: 'bots',
+      textId: quote.id,
+      content: stateText(typing),
+      preserveLines: false,
+      language: quote.language,
+      rules: typing.rules,
+      timeLimitMs: typing.timeLimitMs,
+      practiceKind: null,
+      bots: { seed, levels: bots.map((bot) => bot.profile.level) },
+      keystrokes: encodeKeystrokes(typing.keystrokes) as SubmitResultInput['keystrokes'],
+      playedAt: new Date().toISOString(),
+    };
+  }, [phase, typing, quote, metrics, seed, bots]);
+  const saveStatus = useSaveResult(round, payload);
   const positions = useMemo(
     () => new Map(outcomes.map((outcome) => [outcome.id, outcome.position])),
     [outcomes],
@@ -126,6 +151,7 @@ export function RaceScreen() {
               )
             }
             ignoreAccents={typing.rules.ignoreAccents}
+            saveNote={<SaveStatusNote status={saveStatus} />}
             nextLabel={t('another')}
             repeatLabel={t('rematch')}
             onNext={() => {

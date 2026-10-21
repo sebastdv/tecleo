@@ -1,4 +1,4 @@
-import { applyInput, start } from './state.js';
+import { applyInput, start, tick } from './state.js';
 import {
   BACKSPACE,
   DELETE_WORD,
@@ -31,20 +31,46 @@ export function blankRun(state: TypingState): TypingState {
   );
 }
 
+/** Lo mínimo para reproducir una pulsación: cuándo y qué carácter. */
+export type KeystrokeInput = Pick<Keystroke, 't' | 'input'>;
+
 /**
- * Reproduce un registro de pulsaciones sobre el texto de `state`. Sirve para repeticiones,
- * fantasmas, gráficas y para que el servidor verifique lo que reporta el cliente.
- * `onStep` recibe el estado antes de cada pulsación (útil para estadísticas por posición).
+ * Reproduce un registro de pulsaciones sobre el texto de `state`, sin límite de tiempo.
+ * Sirve para repeticiones, fantasmas y gráficas. `onStep` recibe el estado antes de cada
+ * pulsación (útil para estadísticas por posición).
  */
-export function replayKeystrokes(
+export function replayKeystrokes<K extends KeystrokeInput>(
   state: TypingState,
-  keystrokes: readonly Keystroke[],
-  onStep?: (before: TypingState, keystroke: Keystroke) => void,
+  keystrokes: readonly K[],
+  onStep?: (before: TypingState, keystroke: K) => void,
 ): TypingState {
   let current = blankRun(state);
   for (const keystroke of keystrokes) {
     onStep?.(current, keystroke);
     current = applyInput(current, keystrokeToAction(keystroke), keystroke.t);
+  }
+  return current;
+}
+
+/**
+ * Juega un registro respetando las reglas de `template`, incluido su límite de tiempo: lo
+ * escrito después del límite se descarta y la prueba se cierra en el límite. Es lo que usa el
+ * servidor para calcular el resultado oficial a partir de lo que envía el cliente.
+ */
+export function playKeystrokes(
+  template: TypingState,
+  keystrokes: readonly KeystrokeInput[],
+): TypingState {
+  let current = start(
+    { ...blankRun(template), phase: 'idle', startedAt: null, timeLimitMs: template.timeLimitMs },
+    0,
+  );
+  for (const keystroke of keystrokes) {
+    current = applyInput(current, keystrokeToAction(keystroke), keystroke.t);
+    if (current.phase === 'finished') break;
+  }
+  if (current.phase === 'running' && current.timeLimitMs !== null) {
+    current = tick(current, current.timeLimitMs);
   }
   return current;
 }

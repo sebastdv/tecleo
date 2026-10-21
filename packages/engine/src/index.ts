@@ -80,3 +80,13 @@ export {
   type SimulateBotOptions,
 } from './bots/bot.js';
 export { rankRunners, type RunnerResult, type Standing } from './bots/standings.js';
+export { decodeKeystrokes, encodeKeystrokes, type EncodedKeystrokes } from './typing/codec.js';
+export { playKeystrokes, type KeystrokeInput } from './typing/replay.js';
+export {
+  inspectRun,
+  MAX_PLAUSIBLE_PEAK_WPM,
+  MAX_PLAUSIBLE_WPM,
+  MIN_INTERVAL_VARIATION,
+  type CheatReason,
+  type CheatReport,
+} from './anticheat/anticheat.js';

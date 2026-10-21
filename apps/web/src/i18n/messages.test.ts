@@ -11,7 +11,10 @@ function keys(value: unknown, prefix = ''): string[] {
 }
 
 function placeholders(message: string): string[] {
-  return [...message.matchAll(/\{(\w+)/g)].map((match) => match[1] ?? '').sort();
+  // Variable ICU: un nombre seguido de "," o "}". El texto de las ramas plurales no cuenta.
+  return [
+    ...new Set([...message.matchAll(/\{(\w+)\s*[,}]/g)].map((match) => match[1] ?? '')),
+  ].sort();
 }
 
 describe('mensajes', () => {

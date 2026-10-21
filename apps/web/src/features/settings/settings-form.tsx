@@ -32,6 +32,7 @@ import { playKeySound } from '@/lib/key-sound';
 import { useSettings, useSettingsStore } from '@/settings/settings-store';
 import { THEME_TOKENS } from '@/theme/themes';
 
+import { AccountSection } from './account-section';
 import { TypingPreview } from './typing-preview';
 
 const FONT_NAMES: Record<UserSettings['gameFont'], string> = {
@@ -133,6 +134,7 @@ export function SettingsForm() {
   return (
     <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <div className="flex flex-col gap-10">
+        <AccountSection />
         <Section title={t('appearance')}>
           <Field label={t('theme')}>
             {({ labelId }) => (

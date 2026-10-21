@@ -14,7 +14,10 @@
     "login": "Log in",
     "openMenu": "Open menu",
     "language": "Interface language",
-    "theme": "Theme"
+    "theme": "Theme",
+    "account": "Account",
+    "profile": "My profile",
+    "logout": "Log out"
   },
   "footer": {
     "credits": "Texts from public domain works taken from <gutenberg>Project Gutenberg</gutenberg>. Word lists from <frequency>FrequencyWords</frequency> (CC BY-SA 4.0).",
@@ -213,7 +216,22 @@
       "advanced": "Advanced (70–90 wpm)",
       "expert": "Expert (100–120 wpm)",
       "legend": "Legend (130–160 wpm)"
-    }
+    },
+    "account": "Account",
+    "avatar": "Avatar",
+    "avatars": {
+      "brass": "Brass",
+      "ink": "Ink",
+      "forest": "Forest",
+      "plum": "Plum",
+      "graphite": "Graphite",
+      "ribbon": "Ribbon"
+    },
+    "country": "Country",
+    "countryNone": "Not set",
+    "accountSaved": "Saved.",
+    "accountError": "Couldn't save. Try again.",
+    "syncedToAccount": "Changes are saved to your account and apply on all your devices."
   },
   "upcoming": {
     "title": "Not available yet",
@@ -274,7 +292,56 @@
   },
   "profile": {
     "title": "{nickname}'s profile",
-    "description": "Your wpm over time, race history, weak-key map, achievements and replays."
+    "notFound": "There's no player with that nickname.",
+    "loadError": "The profile couldn't be loaded. Check your connection.",
+    "memberSince": "Playing since {date}",
+    "level": "Level {level}",
+    "stats": {
+      "averageWpm": "average wpm",
+      "averageWpmHint": "Last 10 completed runs",
+      "bestWpm": "best wpm",
+      "races": "runs",
+      "winRate": "wins",
+      "averageAccuracy": "average accuracy"
+    },
+    "evolution": "Progress",
+    "evolutionLabel": "wpm of the latest runs",
+    "bestByMode": "Personal bests",
+    "modes": {
+      "practice": "Practice",
+      "bots": "Against bots",
+      "public": "Public",
+      "private": "Private room",
+      "ghost": "Ghost",
+      "daily": "Daily challenge",
+      "targeted": "Targeted practice"
+    },
+    "heatmap": "Keys with the most errors",
+    "heatmapHint": "The stronger the color, the more errors per attempt. Layout: {layout}.",
+    "heatmapKey": "{key}: {errors} errors in {attempts} attempts",
+    "heatmapEmpty": "Not enough keystrokes for the map yet.",
+    "bigrams": "Problem letter pairs",
+    "bigramsEmpty": "No letter pair stands out for errors yet.",
+    "bigramRate": "{rate}% errors",
+    "history": "History",
+    "historyEmpty": "No saved runs yet.",
+    "filters": {
+      "mode": "Mode",
+      "language": "Language",
+      "all": "all"
+    },
+    "columns": {
+      "date": "Date",
+      "mode": "Mode",
+      "wpm": "wpm",
+      "accuracy": "Accuracy",
+      "position": "Place"
+    },
+    "positionValue": "{position} of {runners}",
+    "flagged": "Flagged by the anti-cheat: doesn't count for leaderboards",
+    "loadMore": "Load more",
+    "empty": "Play a practice or a race to start your history.",
+    "play": "Play now"
   },
   "auth": {
     "loginTitle": "Log in",
@@ -286,15 +353,37 @@
     "nicknameHint": "3 to 20 letters, numbers, hyphens or underscores.",
     "loginSubmit": "Log in",
     "registerSubmit": "Create account",
-    "unavailable": "Accounts aren't active yet. You can play everything without one.",
     "noAccount": "Don't have an account?",
     "toRegister": "Create one",
     "haveAccount": "Already have an account?",
-    "toLogin": "Log in"
+    "toLogin": "Log in",
+    "loginDescription": "Your results, stats and settings, on any device.",
+    "registerDescription": "Free. You can keep playing without an account if you prefer.",
+    "submitting": "One moment…",
+    "importGuest": "{count, plural, one {Save the result I played as a guest to my account} other {Save the # results I played as a guest to my account}}",
+    "imported": "{count, plural, one {# guest result was} other {# guest results were}} saved to your account.",
+    "errors": {
+      "email": "Enter a valid email.",
+      "password": "The password needs at least 8 characters.",
+      "nickname": "The nickname needs 3 to 20 letters, numbers, hyphens or underscores.",
+      "EMAIL_TAKEN": "That email already has an account. Want to log in?",
+      "NICKNAME_TAKEN": "That nickname is taken.",
+      "INVALID_CREDENTIALS": "Wrong email or password.",
+      "RATE_LIMITED": "Too many attempts. Wait a minute and try again.",
+      "NETWORK": "Can't reach the server. Try again in a moment.",
+      "generic": "Something went wrong. Try again.",
+      "passwordRequired": "Enter your password."
+    }
   },
   "notFound": {
     "title": "This page doesn't exist",
     "description": "Check the address or go back home.",
     "cta": "Back to home"
+  },
+  "saveStatus": {
+    "saving": "Saving the result…",
+    "saved": "Result saved to your profile.",
+    "local": "Result saved in this browser. <register>Create an account</register> to keep it.",
+    "error": "The result couldn't be saved to your account."
   }
 }

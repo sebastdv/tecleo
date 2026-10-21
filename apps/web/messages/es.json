@@ -14,7 +14,10 @@
     "login": "Entrar",
     "openMenu": "Abrir menú",
     "language": "Idioma de la interfaz",
-    "theme": "Tema"
+    "theme": "Tema",
+    "account": "Cuenta",
+    "profile": "Mi perfil",
+    "logout": "Salir"
   },
   "footer": {
     "credits": "Textos de obras de dominio público tomadas de <gutenberg>Project Gutenberg</gutenberg>. Listas de palabras de <frequency>FrequencyWords</frequency> (CC BY-SA 4.0).",
@@ -213,7 +216,22 @@
       "advanced": "Avanzado (70–90 ppm)",
       "expert": "Experto (100–120 ppm)",
       "legend": "Leyenda (130–160 ppm)"
-    }
+    },
+    "account": "Cuenta",
+    "avatar": "Avatar",
+    "avatars": {
+      "brass": "Latón",
+      "ink": "Tinta",
+      "forest": "Bosque",
+      "plum": "Ciruela",
+      "graphite": "Grafito",
+      "ribbon": "Cinta"
+    },
+    "country": "País",
+    "countryNone": "Sin indicar",
+    "accountSaved": "Guardado.",
+    "accountError": "No se pudo guardar. Vuelve a intentarlo.",
+    "syncedToAccount": "Los cambios se guardan en tu cuenta y se aplican en todos tus dispositivos."
   },
   "upcoming": {
     "title": "Todavía no está disponible",
@@ -274,7 +292,56 @@
   },
   "profile": {
     "title": "Perfil de {nickname}",
-    "description": "Evolución de tu ppm, historial, mapa de teclas débiles, logros y repeticiones."
+    "notFound": "No existe un jugador con ese apodo.",
+    "loadError": "No se pudo cargar el perfil. Revisa tu conexión.",
+    "memberSince": "Juega desde {date}",
+    "level": "Nivel {level}",
+    "stats": {
+      "averageWpm": "ppm promedio",
+      "averageWpmHint": "Últimas 10 pruebas completas",
+      "bestWpm": "mejor ppm",
+      "races": "pruebas",
+      "winRate": "victorias",
+      "averageAccuracy": "precisión media"
+    },
+    "evolution": "Evolución",
+    "evolutionLabel": "ppm de las últimas pruebas",
+    "bestByMode": "Mejores marcas",
+    "modes": {
+      "practice": "Práctica",
+      "bots": "Contra bots",
+      "public": "Pública",
+      "private": "Sala privada",
+      "ghost": "Fantasma",
+      "daily": "Desafío diario",
+      "targeted": "Práctica dirigida"
+    },
+    "heatmap": "Teclas con más errores",
+    "heatmapHint": "Cuanto más intenso, más errores por intento. Distribución: {layout}.",
+    "heatmapKey": "{key}: {errors} errores en {attempts} intentos",
+    "heatmapEmpty": "Todavía no hay suficientes pulsaciones para el mapa.",
+    "bigrams": "Pares de letras problemáticos",
+    "bigramsEmpty": "Ningún par de letras destaca por errores todavía.",
+    "bigramRate": "{rate}% de error",
+    "history": "Historial",
+    "historyEmpty": "Todavía no hay pruebas guardadas.",
+    "filters": {
+      "mode": "Modo",
+      "language": "Idioma",
+      "all": "todos"
+    },
+    "columns": {
+      "date": "Fecha",
+      "mode": "Modo",
+      "wpm": "ppm",
+      "accuracy": "Precisión",
+      "position": "Puesto"
+    },
+    "positionValue": "{position} de {runners}",
+    "flagged": "Marcado por el antitrampa: no cuenta para rankings",
+    "loadMore": "Ver más",
+    "empty": "Juega una práctica o una carrera para empezar tu historial.",
+    "play": "Jugar ahora"
   },
   "auth": {
     "loginTitle": "Entrar",
@@ -286,15 +353,37 @@
     "nicknameHint": "Entre 3 y 20 letras, números, guiones o guiones bajos.",
     "loginSubmit": "Entrar",
     "registerSubmit": "Crear cuenta",
-    "unavailable": "Las cuentas todavía no están activas. Puedes jugar todo sin cuenta.",
     "noAccount": "¿No tienes cuenta?",
     "toRegister": "Crea una",
     "haveAccount": "¿Ya tienes cuenta?",
-    "toLogin": "Entra"
+    "toLogin": "Entra",
+    "loginDescription": "Tus resultados, estadísticas y preferencias, en cualquier dispositivo.",
+    "registerDescription": "Gratis. Puedes seguir jugando sin cuenta si prefieres.",
+    "submitting": "Un momento…",
+    "importGuest": "{count, plural, one {Guardar en mi cuenta el resultado que jugué como invitado} other {Guardar en mi cuenta los # resultados que jugué como invitado}}",
+    "imported": "{count, plural, one {Se guardó # resultado} other {Se guardaron # resultados}} de invitado en tu cuenta.",
+    "errors": {
+      "email": "Escribe un correo válido.",
+      "password": "La contraseña necesita al menos 8 caracteres.",
+      "nickname": "El apodo debe tener entre 3 y 20 letras, números, guiones o guiones bajos.",
+      "EMAIL_TAKEN": "Ese correo ya tiene cuenta. ¿Quieres entrar?",
+      "NICKNAME_TAKEN": "Ese apodo ya está en uso.",
+      "INVALID_CREDENTIALS": "Correo o contraseña incorrectos.",
+      "RATE_LIMITED": "Demasiados intentos. Espera un minuto y vuelve a probar.",
+      "NETWORK": "No hay conexión con el servidor. Vuelve a intentarlo en un momento.",
+      "generic": "Algo salió mal. Vuelve a intentarlo.",
+      "passwordRequired": "Escribe tu contraseña."
+    }
   },
   "notFound": {
     "title": "Esta página no existe",
     "description": "Revisa la dirección o vuelve al inicio.",
     "cta": "Volver al inicio"
+  },
+  "saveStatus": {
+    "saving": "Guardando el resultado…",
+    "saved": "Resultado guardado en tu perfil.",
+    "local": "Resultado guardado en este navegador. <register>Crea una cuenta</register> para conservarlo.",
+    "error": "No se pudo guardar el resultado en tu cuenta."
   }
 }

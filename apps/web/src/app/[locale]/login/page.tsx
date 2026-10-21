@@ -15,7 +15,7 @@ export default function LoginPage() {
   const t = useTranslations('auth');
   return (
     <PageContainer>
-      <PageHeader title={t('loginTitle')} />
+      <PageHeader title={t('loginTitle')} description={t('loginDescription')} />
       <AuthForm mode="login" />
     </PageContainer>
   );

@@ -1,15 +1,20 @@
 'use client';
 
 import { LANGUAGES, THEMES, type Language, type ThemeId } from '@tecleo/shared';
-import { Languages, Menu, Palette, Settings } from 'lucide-react';
+import { Languages, LogOut, Menu, Palette, Settings, User } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Suspense } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { logout } from '@/auth/auth-actions';
+import { useAuthStore } from '@/auth/auth-store';
+import { TypeAvatar } from '@/components/type-avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
@@ -185,6 +190,72 @@ function LanguageMenu() {
   );
 }
 
+/** "Entrar" para invitados; menú con perfil y salir con sesión. Nada mientras se comprueba. */
+function AccountMenu({ mobile = false }: { mobile?: boolean }) {
+  const t = useTranslations('nav');
+  const status = useAuthStore((state) => state.status);
+  const user = useAuthStore((state) => state.user);
+  if (status === 'unknown')
+    return <span aria-hidden="true" className={mobile ? '' : 'ml-2 hidden w-16 sm:block'} />;
+  if (status !== 'authenticated' || !user) {
+    return (
+      <Button
+        variant="outline"
+        size={mobile ? 'default' : 'sm'}
+        asChild
+        className={mobile ? '' : 'ml-2 hidden sm:inline-flex'}
+      >
+        <Link href="/login">{t('login')}</Link>
+      </Button>
+    );
+  }
+  if (mobile) {
+    return (
+      <div className="flex flex-col gap-2">
+        <Button variant="outline" asChild>
+          <Link href={`/profile/${user.nickname}`}>{t('profile')}</Link>
+        </Button>
+        <Button variant="ghost" onClick={() => void logout()}>
+          {t('logout')}
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="ml-2 hidden h-9 gap-2 px-2 sm:inline-flex"
+          aria-label={`${t('account')}: ${user.nickname}`}
+        >
+          <TypeAvatar nickname={user.nickname} avatar={user.avatar} size="sm" />
+          <span className="max-w-32 truncate text-sm">{user.nickname}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-44">
+        <DropdownMenuItem asChild>
+          <Link href={`/profile/${user.nickname}`}>
+            <User />
+            {t('profile')}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/settings">
+            <Settings />
+            {t('settings')}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => void logout()}>
+          <LogOut />
+          {t('logout')}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function Header() {
   const t = useTranslations('nav');
   return (
@@ -209,9 +280,7 @@ export function Header() {
             </TooltipTrigger>
             <TooltipContent>{t('settings')}</TooltipContent>
           </Tooltip>
-          <Button variant="outline" size="sm" asChild className="ml-2 hidden sm:inline-flex">
-            <Link href="/login">{t('login')}</Link>
-          </Button>
+          <AccountMenu />
           <MobileMenu />
         </div>
       </div>
@@ -235,9 +304,7 @@ function MobileMenu() {
         <nav aria-label={t('primary')}>
           <NavLinks vertical />
         </nav>
-        <Button variant="outline" asChild>
-          <Link href="/login">{t('login')}</Link>
-        </Button>
+        <AccountMenu mobile />
       </SheetContent>
     </Sheet>
   );

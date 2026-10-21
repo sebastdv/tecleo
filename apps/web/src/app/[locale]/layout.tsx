@@ -14,7 +14,9 @@ import { getTranslations } from 'next-intl/server';
 import { SiteShell } from '@/components/layout/site-shell';
 import { Providers } from '@/components/providers';
 import { routing } from '@/i18n/routing';
+import { SessionBootstrap } from '@/auth/session-bootstrap';
 import { SettingsEffects } from '@/settings/settings-effects';
+import { SettingsSync } from '@/settings/settings-sync';
 import { themeScript } from '@/settings/theme-script';
 import { themeCss } from '@/theme/themes';
 
@@ -64,6 +66,8 @@ export default async function LocaleLayout({ children }: LayoutProps<'/[locale]'
         <NextIntlClientProvider>
           <Providers>
             <SettingsEffects />
+            <SessionBootstrap />
+            <SettingsSync />
             <SiteShell>{children}</SiteShell>
           </Providers>
         </NextIntlClientProvider>

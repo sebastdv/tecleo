@@ -15,7 +15,7 @@ export default function RegisterPage() {
   const t = useTranslations('auth');
   return (
     <PageContainer>
-      <PageHeader title={t('registerTitle')} />
+      <PageHeader title={t('registerTitle')} description={t('registerDescription')} />
       <AuthForm mode="register" />
     </PageContainer>
   );

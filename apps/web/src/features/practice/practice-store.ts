@@ -108,7 +108,8 @@ export const usePracticeStore = create<PracticeStore>()(
         const request = ++requestId;
         const { config, source } = get();
         const previousId = source?.quote?.id ?? source?.snippet?.id;
-        set({ status: 'loading' });
+        // La semilla se fija ya: si el usuario cambia una opción mientras carga, la conserva.
+        set({ status: 'loading', seed });
         try {
           const built = await buildPracticeText(
             config,

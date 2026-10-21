@@ -1,21 +1,104 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
-/* Tokens mínimos de la Fase 0; el sistema de temas completo llega en la Fase 2. */
-:root {
-  --background: #0e0f12;
-  --foreground: #e8e8ea;
-  color-scheme: dark;
-}
+/*
+ * Los colores de cada tema se generan desde src/theme/themes.ts (única fuente de verdad)
+ * y se inyectan en <head>; aquí solo se mapean a utilidades de Tailwind.
+ */
+@custom-variant dark (&:is([data-theme='ink'], [data-theme='graphite'], [data-theme='forest'], [data-theme='plum'], [data-theme='contrast']) *);
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-pending: var(--pending);
+  --color-error: var(--error);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --font-sans: var(--font-schibsted), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-schibsted), ui-sans-serif, system-ui, sans-serif;
+  --font-game: var(--game-font), ui-monospace, monospace;
+  --text-game: var(--game-size);
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, sans-serif;
+/* Tipografía y tamaño del texto de juego, elegidos en Configuración. */
+:root {
+  --game-font: var(--font-jetbrains);
+  --game-size: 1.625rem;
+  --radius: 0.625rem;
+}
+[data-font='plex'] {
+  --game-font: var(--font-plex);
+}
+[data-font='fira'] {
+  --game-font: var(--font-fira);
+}
+[data-font='geist'] {
+  --game-font: var(--font-geist-mono);
+}
+[data-size='s'] {
+  --game-size: 1.25rem;
+}
+[data-size='l'] {
+  --game-size: 2rem;
+}
+[data-size='xl'] {
+  --game-size: 2.5rem;
+}
+
+/* Cambio de tema instantáneo: ninguna transición durante el cuadro del cambio. */
+[data-switching-theme] *,
+[data-switching-theme] *::before,
+[data-switching-theme] *::after {
+  transition: none !important;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/60;
+  }
+  html {
+    @apply bg-background;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Cursor: fijo mientras se escribe (cada movimiento reinicia la animación) y parpadea en reposo. */
@@ -36,4 +119,13 @@ body {
   @media (prefers-reduced-motion: reduce) {
     animation: none;
   }
+}
+
+/* Modo concentración: mientras se escribe solo queda el texto. */
+[data-chrome] {
+  transition: opacity 300ms ease;
+}
+[data-focus-mode] [data-chrome] {
+  opacity: 0;
+  pointer-events: none;
 }

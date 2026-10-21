@@ -5,3 +5,4 @@ coverage/
 .turbo/
 next-env.d.ts
 docs/spec.md
+packages/content/src/data/*.json

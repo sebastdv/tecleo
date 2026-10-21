@@ -1,0 +1,36 @@
+{
+  "name": "@tecleo/content",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Corpus de textos de dominio público, listas de palabras, fragmentos de código y generadores",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch --no-clean",
+    "build:corpus": "node scripts/build-corpus.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc && tsc -p scripts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tecleo/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@tecleo/eslint-config": "workspace:*",
+    "@types/node": "24.19.2",
+    "eslint": "9.39.5",
+    "tsdown": "0.23.1",
+    "typescript": "6.0.3",
+    "vitest": "5.0.5"
+  }
+}

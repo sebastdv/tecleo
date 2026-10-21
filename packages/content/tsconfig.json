@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["ES2023"],
+    "types": [],
+    // Los scripts de build corren con Node (type stripping) e importan con extensión .ts.
+    "allowImportingTsExtensions": true
+  },
+  "include": ["src", "*.config.ts"]
+}

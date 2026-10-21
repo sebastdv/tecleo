@@ -183,3 +183,42 @@ Hay tres estilos (clic, suave y máquina de escribir), generados con Web Audio s
 ### Último segundo corto en las métricas
 
 Encontrado al revisar la gráfica: si la prueba dura, por ejemplo, 2,05 s, el tramo final de 50 ms daba un WPM bruto de miles. Ahora un último tramo de menos de 500 ms se une al segundo anterior, y la línea de tiempo, la consistencia y el pico salen de los mismos tramos.
+
+## Fase 3
+
+### Bots que se calibran solos
+
+El bot planifica sus pulsaciones en unidades relativas, con todos los rasgos de la spec:
+
+- retardo log-normal con una dispersión por nivel;
+- pausas ×2,5 después de la puntuación;
+- ráfagas (×0,8) en palabras de hasta 4 letras;
+- más tiempo en mayúsculas, tildes y símbolos;
+- errores en teclas vecinas u olvidos de la tilde, que corrige: sigue unas letras sin notarlos, reacciona, borra y reescribe;
+- fatiga (hasta +15 %) o sprint final (−15 % en el último 20 %).
+
+Al final se escala todo para que el ppm neto coincida con el objetivo, muestreado de una normal dentro del rango del nivel. Así el criterio de la Fase 3 (el ppm final cae en el rango) se cumple siempre, y el ritmo sigue siendo irregular: la variación entre teclas supera el 25 %.
+
+### Bots como registros de pulsaciones
+
+Cada bot se ejecuta con `applyInput` del motor. Su resultado es un registro idéntico al de una persona: se reproduce, se analiza y se valida igual. La semilla de la carrera deriva una semilla por bot, así que cliente y servidor generan exactamente los mismos bots.
+
+### Nombres de bots
+
+Los bots llevan nombres de tipógrafos e impresores históricos (Garamond, Bodoni, Didot, Ibarra…), en línea con la identidad de "tipos móviles". Siempre llevan el ícono y el texto "(bot)" para lectores de pantalla.
+
+### Carrera local
+
+- **Cuenta regresiva:** de 3 s. La de las salas en línea será de 5 s, como pide la spec. Durante la cuenta se ve el texto, pero la entrada se ignora.
+- **Reglas:** siempre estrictas; "ignorar tildes" se respeta y queda marcado.
+- **Límite de tiempo:** el texto completo a 12 ppm, con un mínimo de un minuto. Quien no llega queda como "No terminó".
+- **Posiciones:** se conocen al terminar el jugador, porque las llegadas de los bots están precalculadas. En la pista, un bot que llegó antes que el jugador muestra su puesto definitivo en ese momento.
+- **Revancha:** repite el texto y los mismos bots.
+
+### Pista
+
+Los bots se mueven con `requestAnimationFrame` y escriben la variable CSS `--p` sin pasar por React. Su progreso se interpola entre pulsaciones para que se deslicen en lugar de saltar. El jugador avanza con cada pulsación, con una transición de 100 ms.
+
+### Stores persistidos que no pisan lo guardado
+
+Encontrado en los E2E. En desarrollo, React monta, desmonta y vuelve a montar los efectos. La limpieza de la carrera hacía `set()` antes de la rehidratación, y `persist` escribía la configuración por defecto encima de la guardada. `readFirstStorage()` descarta las escrituras hasta la primera lectura, y lo usan los tres stores persistidos.

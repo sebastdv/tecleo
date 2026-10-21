@@ -2,7 +2,7 @@
 
 Carreras de mecanografía en tiempo real contra otras personas o contra bots. Aparece un texto, lo escribes y ves en vivo lo correcto, lo incorrecto y lo pendiente mientras tu corredor avanza en la pista junto a los demás.
 
-> Estado: **Fase 2**. Se puede practicar sin cuenta ni servidor (por tiempo, por palabras o con textos de dominio público y código), en español o inglés, con seis temas y la configuración guardada en el navegador. Ver el estado de cada fase en [`CLAUDE.md`](CLAUDE.md).
+> Estado: **Fase 3**. Se puede practicar y correr contra hasta cinco bots sin cuenta ni servidor, en español o inglés, con seis temas y la configuración guardada en el navegador. Ver el estado de cada fase en [`CLAUDE.md`](CLAUDE.md).
 
 ## Correr en local
 

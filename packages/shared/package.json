@@ -1,0 +1,33 @@
+{
+  "name": "@tecleo/shared",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Esquemas Zod, contratos de eventos y DTOs compartidos entre web y server",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch --no-clean",
+    "lint": "eslint .",
+    "typecheck": "tsc",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@tecleo/eslint-config": "workspace:*",
+    "eslint": "9.39.5",
+    "tsdown": "0.23.1",
+    "typescript": "6.0.3",
+    "vitest": "5.0.5"
+  }
+}

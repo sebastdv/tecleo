@@ -2,11 +2,11 @@ import { expect, test, type Page } from '@playwright/test';
 
 /** El texto completo a escribir está en un nodo solo para lectores de pantalla. */
 async function targetText(page: Page): Promise<string> {
-  return (await page.locator('#typing-target').textContent()) ?? '';
+  return (await page.locator('[data-typing-target]').textContent()) ?? '';
 }
 
 async function openWordsPractice(page: Page, seed: number, count: '10' | '25' = '10') {
-  await page.goto(`/practice?seed=${seed}`);
+  await page.goto(`/es/practice?seed=${seed}`);
   await page.getByRole('button', { name: 'palabras', exact: true }).click();
   await page.getByRole('button', { name: count, exact: true }).click();
   await expect(page.getByLabel('Texto a escribir')).toBeFocused();
@@ -27,7 +27,7 @@ test('práctica por palabras: escribir el texto completo muestra los resultados'
 
   await expect(results(page)).toBeVisible();
   await expect(accuracy(page)).toHaveText('100%');
-  await expect(page.getByLabel('Gráfica de WPM por segundo')).toBeVisible();
+  await expect(page.getByLabel('Palabras por minuto en cada segundo')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Siguiente texto' })).toBeFocused();
 });
 
@@ -68,7 +68,7 @@ test('los errores bajan la precisión y el backspace los corrige', async ({ page
   const text = await targetText(page);
 
   await page.keyboard.type('x', { delay: 40 });
-  await expect(page.locator('[data-word-index="0"] > span').first()).toHaveClass(/text-rose-400/);
+  await expect(page.locator('[data-word-index="0"] > span').first()).toHaveClass(/text-error/);
   await page.keyboard.press('Backspace');
   await page.keyboard.type(text, { delay: 30 });
 
@@ -84,7 +84,7 @@ test('pegar está bloqueado', async ({ page }) => {
       new InputEvent('beforeinput', { inputType: 'insertFromPaste', data, cancelable: true }),
     );
   }, text);
-  await expect(page.locator('.text-zinc-100')).toHaveCount(0);
+  await expect(page.locator('[data-word-index] .text-foreground')).toHaveCount(0);
   await expect(results(page)).toHaveCount(0);
 });
 
@@ -106,8 +106,8 @@ test('al perder el foco aparece el aviso y una tecla lo devuelve', async ({ page
 
 test('modo por tiempo: termina solo al cumplirse los 15 s', async ({ page }) => {
   test.setTimeout(45_000);
-  await page.goto('/practice?seed=5');
-  await page.getByRole('button', { name: '15s', exact: true }).click();
+  await page.goto('/es/practice?seed=5');
+  await page.getByRole('button', { name: '15 s', exact: true }).click();
   await expect(typingInput(page)).toBeFocused();
   const words = (await targetText(page)).split(' ').slice(0, 5).join(' ');
 

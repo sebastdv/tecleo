@@ -5,8 +5,12 @@ import { z } from 'zod';
  * Convierte un esquema Zod de `@tecleo/shared` en un esquema OpenAPI para Swagger,
  * así la documentación sale de la misma fuente que la validación.
  */
-export function zodToOpenApi(schema: z.ZodType): SchemaObject {
+export function zodToOpenApi(schema: z.ZodType, io: 'input' | 'output' = 'output'): SchemaObject {
   // El JSON Schema que genera Zod con target openapi-3.0 es un SchemaObject válido;
   // los tipos de ambas librerías no se solapan, de ahí la conversión explícita.
-  return z.toJSONSchema(schema, { target: 'openapi-3.0' }) as SchemaObject;
+  return z.toJSONSchema(schema, {
+    target: 'openapi-3.0',
+    io,
+    unrepresentable: 'any',
+  }) as SchemaObject;
 }

@@ -9,5 +9,5 @@
     // Nest declara propiedades que inyecta o rellena el framework después del constructor.
     "strictPropertyInitialization": false
   },
-  "include": ["src", "test", "*.config.ts"]
+  "include": ["src", "test", "prisma", "*.config.ts"]
 }

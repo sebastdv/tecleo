@@ -58,3 +58,7 @@ export function parseSettings(value: unknown): UserSettings {
   const result = userSettingsSchema.safeParse(value);
   return result.success ? result.data : DEFAULT_SETTINGS;
 }
+
+/** Respuesta de `GET /me/settings`: `null` si la cuenta todavía no guardó preferencias. */
+export const storedSettingsSchema = z.object({ settings: userSettingsSchema.nullable() });
+export type StoredSettings = z.infer<typeof storedSettingsSchema>;

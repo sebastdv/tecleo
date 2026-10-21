@@ -16,6 +16,20 @@ const envSchema = z.object({
         .map((origin) => origin.trim())
         .filter(Boolean),
     ),
+  DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
+  /** Firma de los access tokens (HS256). En producción, un valor aleatorio largo. */
+  JWT_SECRET: z.string().min(32),
+  ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().positive().default(900),
+  REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
+  /**
+   * Ruta de la cookie del refresh token tal como la ve el navegador: la web expone la API bajo
+   * `/api` (proxy de Next), así que la cookie va a `/api/auth`.
+   */
+  REFRESH_COOKIE_PATH: z.string().startsWith('/').default('/api/auth'),
+  /** Intentos por minuto y por IP en registro y login. */
+  AUTH_RATE_LIMIT: z.coerce.number().int().positive().default(10),
+  /** Saltos de proxy de confianza para leer la IP real (rate limiting detrás de Next/Render). */
+  TRUST_PROXY: z.coerce.number().int().min(0).default(1),
 });
 
 export type Env = z.infer<typeof envSchema>;

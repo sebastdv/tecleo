@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+
+/* Tokens mínimos de la Fase 0; el sistema de temas completo llega en la Fase 2. */
+:root {
+  --background: #0e0f12;
+  --foreground: #e8e8ea;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}

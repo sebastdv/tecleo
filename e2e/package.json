@@ -1,0 +1,19 @@
+{
+  "name": "@tecleo/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Tests end-to-end con Playwright",
+  "type": "module",
+  "scripts": {
+    "e2e": "playwright test",
+    "lint": "eslint .",
+    "typecheck": "tsc"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@tecleo/eslint-config": "workspace:*",
+    "@types/node": "24.19.2",
+    "eslint": "9.39.5",
+    "typescript": "6.0.3"
+  }
+}

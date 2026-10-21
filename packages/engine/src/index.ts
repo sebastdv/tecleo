@@ -57,3 +57,26 @@ export {
   type RaceMetrics,
   type SecondSample,
 } from './metrics/metrics.js';
+
+export {
+  BOT_LEVEL_IDS,
+  BOT_LEVELS,
+  BOT_NAMES,
+  type BotLevel,
+  type BotLevelSpec,
+} from './bots/levels.js';
+export {
+  botCorrectCharsAt,
+  botProgressAt,
+  botWpmAt,
+  createBotProfile,
+  createBots,
+  simulateBot,
+  type BotProfile,
+  type BotRun,
+  type BotSample,
+  type CreateBotOptions,
+  type CreateBotsOptions,
+  type SimulateBotOptions,
+} from './bots/bot.js';
+export { rankRunners, type RunnerResult, type Standing } from './bots/standings.js';

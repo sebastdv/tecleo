@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
+    "types": ["node"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    // Nest declara propiedades que inyecta o rellena el framework después del constructor.
+    "strictPropertyInitialization": false
+  },
+  "include": ["src", "test", "*.config.ts"]
+}

@@ -10,7 +10,7 @@ import {
   type TextLanguage,
   type WordListSize,
 } from '@tecleo/content';
-import { createRng, randomInt, type TypingMode } from '@tecleo/engine';
+import { createRng, randomInt } from '@tecleo/engine';
 
 export type PracticeMode = 'time' | 'words' | 'text';
 export type TextKind = 'quote' | 'code';
@@ -18,33 +18,30 @@ export type TextKind = 'quote' | 'code';
 export const DURATIONS = [15, 30, 60, 120] as const;
 export const WORD_COUNTS = [10, 25, 50, 100] as const;
 
+/**
+ * Opciones propias de la práctica. El idioma del texto y las reglas de escritura son
+ * preferencias generales y viven en Configuración (`UserSettings`).
+ */
 export interface PracticeConfig {
   readonly mode: PracticeMode;
   readonly durationSeconds: (typeof DURATIONS)[number];
   readonly wordCount: (typeof WORD_COUNTS)[number];
-  readonly language: TextLanguage;
   readonly listSize: WordListSize;
   readonly punctuation: boolean;
   readonly numbers: boolean;
   readonly textKind: TextKind;
   readonly quoteLength: LengthCategory | 'any';
-  readonly typingMode: TypingMode;
-  readonly ignoreAccents: boolean;
 }
 
 export const DEFAULT_CONFIG: PracticeConfig = {
   mode: 'time',
   durationSeconds: 30,
   wordCount: 25,
-  language: 'es',
   listSize: 200,
   punctuation: false,
   numbers: false,
   textKind: 'quote',
   quoteLength: 'any',
-  // En práctica el modo libre es el habitual; las carreras usan estricto.
-  typingMode: 'free',
-  ignoreAccents: false,
 };
 
 /** Palabras iniciales del modo por tiempo y cuántas se agregan cuando quedan pocas. */
@@ -64,6 +61,7 @@ export interface PracticeText {
 /** Arma el texto de una prueba. Es determinista para una misma semilla y configuración. */
 export async function buildPracticeText(
   config: PracticeConfig,
+  language: TextLanguage,
   seed: number,
   excludeId?: string,
 ): Promise<PracticeText> {
@@ -76,7 +74,7 @@ export async function buildPracticeText(
       if (!snippet) throw new Error('No hay fragmentos de código');
       return { text: snippet.content, preserveLines: true, quote: null, snippet, more: null };
     }
-    const quotes = await loadQuotes(config.language);
+    const quotes = await loadQuotes(language);
     const quote = pickQuote(quotes, rng, {
       ...(config.quoteLength !== 'any' && { lengthCategory: config.quoteLength }),
       ...(excludeId !== undefined && { excludeId }),
@@ -84,10 +82,10 @@ export async function buildPracticeText(
     return { text: quote.content, preserveLines: false, quote, snippet: null, more: null };
   }
 
-  const list = await loadWords(config.language, config.listSize);
+  const list = await loadWords(language, config.listSize);
   const words = (count: number) =>
     generateWords(list, {
-      language: config.language,
+      language,
       count,
       rng,
       punctuation: config.punctuation,

@@ -1,7 +1,10 @@
 'use client';
 
-import type { LengthCategory, TextLanguage, WordListSize } from '@tecleo/content';
-import type { TypingMode } from '@tecleo/engine';
+import type { LengthCategory, WordListSize } from '@tecleo/content';
+import { LANGUAGES, type UserSettings } from '@tecleo/shared';
+import { useTranslations } from 'next-intl';
+
+import { useSettings, useSettingsStore } from '@/settings/settings-store';
 
 import {
   DURATIONS,
@@ -16,6 +19,9 @@ interface Option<T> {
   readonly label: string;
 }
 
+const OPTION_CLASS =
+  'rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground aria-pressed:bg-muted aria-pressed:text-foreground aria-pressed:font-medium';
+
 function Segmented<T extends string | number>({
   label,
   options,
@@ -28,7 +34,7 @@ function Segmented<T extends string | number>({
   onChange: (value: T) => void;
 }) {
   return (
-    <div role="group" aria-label={label} className="flex items-center gap-1">
+    <div role="group" aria-label={label} className="flex items-center gap-0.5">
       {options.map((option) => (
         <button
           key={String(option.value)}
@@ -37,7 +43,7 @@ function Segmented<T extends string | number>({
           onClick={() => {
             onChange(option.value);
           }}
-          className="rounded px-2 py-1 text-sm text-zinc-500 hover:text-zinc-200 aria-pressed:text-amber-300"
+          className={OPTION_CLASS}
         >
           {option.label}
         </button>
@@ -62,43 +68,58 @@ function Toggle({
       onClick={() => {
         onChange(!checked);
       }}
-      className="rounded px-2 py-1 text-sm text-zinc-500 hover:text-zinc-200 aria-pressed:text-amber-300"
+      className={OPTION_CLASS}
     >
       {label}
     </button>
   );
 }
 
-const Divider = () => <span aria-hidden="true" className="h-4 w-px bg-zinc-700" />;
+const Divider = () => <span aria-hidden="true" className="mx-1 h-4 w-px bg-border" />;
 
 interface ConfigBarProps {
   readonly config: PracticeConfig;
   readonly onChange: (patch: Partial<PracticeConfig>) => void;
 }
 
+/**
+ * Opciones de la práctica. El idioma del texto, las reglas y "ignorar tildes" son preferencias
+ * generales: se guardan en Configuración y aplican también fuera de la práctica.
+ */
 export function ConfigBar({ config, onChange }: ConfigBarProps) {
+  const t = useTranslations('practice.config');
+  const tLanguages = useTranslations('settings.languages');
+  const settings = useSettings();
+  const update = useSettingsStore((state) => state.update);
+  const updateSettings = (patch: Partial<UserSettings>) => {
+    update(patch);
+  };
+
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg bg-zinc-900 px-3 py-2">
-      <Segmented<TextLanguage>
-        label="Idioma del texto"
-        value={config.language}
-        options={[
-          { value: 'es', label: 'español' },
-          { value: 'en', label: 'inglés' },
-        ]}
-        onChange={(language) => {
-          onChange({ language });
+    <div
+      role="group"
+      aria-label={t('label')}
+      className="flex flex-wrap items-center gap-x-1 gap-y-2 rounded-lg border bg-card px-2 py-1.5"
+    >
+      <Segmented
+        label={t('textLanguage')}
+        value={settings.textLanguage}
+        options={LANGUAGES.map((language) => ({
+          value: language,
+          label: tLanguages(language).toLowerCase(),
+        }))}
+        onChange={(textLanguage) => {
+          updateSettings({ textLanguage });
         }}
       />
       <Divider />
       <Segmented<PracticeMode>
-        label="Modo"
+        label={t('mode')}
         value={config.mode}
-        options={[
-          { value: 'time', label: 'tiempo' },
-          { value: 'words', label: 'palabras' },
-          { value: 'text', label: 'texto' },
-        ]}
+        options={(['time', 'words', 'text'] as const).map((mode) => ({
+          value: mode,
+          label: t(`modes.${mode}`),
+        }))}
         onChange={(mode) => {
           onChange({ mode });
         }}
@@ -106,9 +127,9 @@ export function ConfigBar({ config, onChange }: ConfigBarProps) {
       <Divider />
       {config.mode === 'time' && (
         <Segmented
-          label="Duración en segundos"
+          label={t('duration')}
           value={config.durationSeconds}
-          options={DURATIONS.map((value) => ({ value, label: `${value}s` }))}
+          options={DURATIONS.map((value) => ({ value, label: t('seconds', { value }) }))}
           onChange={(durationSeconds) => {
             onChange({ durationSeconds });
           }}
@@ -116,7 +137,7 @@ export function ConfigBar({ config, onChange }: ConfigBarProps) {
       )}
       {config.mode === 'words' && (
         <Segmented
-          label="Cantidad de palabras"
+          label={t('wordCount')}
           value={config.wordCount}
           options={WORD_COUNTS.map((value) => ({ value, label: String(value) }))}
           onChange={(wordCount) => {
@@ -127,56 +148,56 @@ export function ConfigBar({ config, onChange }: ConfigBarProps) {
       {config.mode === 'text' ? (
         <>
           <Segmented<TextKind>
-            label="Tipo de texto"
+            label={t('kind')}
             value={config.textKind}
-            options={[
-              { value: 'quote', label: 'cita' },
-              { value: 'code', label: 'código' },
-            ]}
+            options={(['quote', 'code'] as const).map((kind) => ({
+              value: kind,
+              label: t(`kinds.${kind}`),
+            }))}
             onChange={(textKind) => {
               onChange({ textKind });
             }}
           />
           {config.textKind === 'quote' && (
-            <Segmented<LengthCategory | 'any'>
-              label="Longitud"
-              value={config.quoteLength}
-              options={[
-                { value: 'any', label: 'cualquiera' },
-                { value: 'short', label: 'corto' },
-                { value: 'medium', label: 'medio' },
-                { value: 'long', label: 'largo' },
-              ]}
-              onChange={(quoteLength) => {
-                onChange({ quoteLength });
-              }}
-            />
+            <>
+              <Divider />
+              <Segmented<LengthCategory | 'any'>
+                label={t('length')}
+                value={config.quoteLength}
+                options={(['any', 'short', 'medium', 'long'] as const).map((length) => ({
+                  value: length,
+                  label: t(`lengths.${length}`),
+                }))}
+                onChange={(quoteLength) => {
+                  onChange({ quoteLength });
+                }}
+              />
+            </>
           )}
         </>
       ) : (
         <>
           <Divider />
           <Segmented<WordListSize>
-            label="Palabras más frecuentes"
+            label={t('listSize')}
             value={config.listSize}
-            options={[
-              { value: 200, label: 'top 200' },
-              { value: 1000, label: '1k' },
-              { value: 5000, label: '5k' },
-            ]}
+            options={([200, 1000, 5000] as const).map((size) => ({
+              value: size,
+              label: t(`lists.${size}`),
+            }))}
             onChange={(listSize) => {
               onChange({ listSize });
             }}
           />
           <Toggle
-            label="puntuación"
+            label={t('punctuation')}
             checked={config.punctuation}
             onChange={(punctuation) => {
               onChange({ punctuation });
             }}
           />
           <Toggle
-            label="números"
+            label={t('numbers')}
             checked={config.numbers}
             onChange={(numbers) => {
               onChange({ numbers });
@@ -185,22 +206,22 @@ export function ConfigBar({ config, onChange }: ConfigBarProps) {
         </>
       )}
       <Divider />
-      <Segmented<TypingMode>
-        label="Reglas de escritura"
-        value={config.typingMode}
-        options={[
-          { value: 'free', label: 'libre' },
-          { value: 'strict', label: 'estricto' },
-        ]}
+      <Segmented
+        label={t('rules')}
+        value={settings.typingMode}
+        options={(['free', 'strict'] as const).map((mode) => ({
+          value: mode,
+          label: t(`ruleNames.${mode}`),
+        }))}
         onChange={(typingMode) => {
-          onChange({ typingMode });
+          updateSettings({ typingMode });
         }}
       />
       <Toggle
-        label="ignorar tildes"
-        checked={config.ignoreAccents}
+        label={t('ignoreAccents')}
+        checked={settings.ignoreAccents}
         onChange={(ignoreAccents) => {
-          onChange({ ignoreAccents });
+          updateSettings({ ignoreAccents });
         }}
       />
     </div>

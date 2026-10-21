@@ -2,11 +2,12 @@ import { wordCharStates, wordMatches, type CharState, type WordState } from '@te
 import { memo } from 'react';
 
 const CHAR_CLASS: Record<CharState, string> = {
-  pending: 'text-zinc-500',
-  correct: 'text-zinc-100',
-  corrected: 'text-zinc-100',
-  incorrect: 'text-rose-400 underline decoration-2 underline-offset-4',
-  extra: 'text-rose-300/80 underline decoration-2 underline-offset-4',
+  pending: 'text-pending',
+  correct: 'text-foreground',
+  corrected: 'text-foreground',
+  // El error se marca con color y subrayado: no depende solo del color.
+  incorrect: 'text-error underline decoration-2 underline-offset-[0.2em]',
+  extra: 'text-error underline decoration-dotted decoration-2 underline-offset-[0.2em]',
 };
 
 /** Espacios y saltos escritos de más se muestran visibles. */
@@ -35,7 +36,7 @@ export const Word = memo(function Word({ word, index, committed, ignoreAccents }
     <>
       <span
         data-word-index={index}
-        className={skipped ? 'decoration-rose-400/70 underline decoration-wavy' : undefined}
+        className={skipped ? 'underline decoration-error/70 decoration-wavy' : undefined}
       >
         {states.map((state, i) => (
           <span key={i} className={CHAR_CLASS[state]}>

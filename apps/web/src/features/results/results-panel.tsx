@@ -1,13 +1,17 @@
 'use client';
 
 import type { RaceMetrics } from '@tecleo/engine';
+import { motion } from 'motion/react';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, type ReactNode } from 'react';
+
+import { Button } from '@/components/ui/button';
 
 import { WpmChart } from './wpm-chart';
 
 interface ResultsPanelProps {
   readonly metrics: RaceMetrics;
-  /** Atribución del texto (autor y obra, o lenguaje del fragmento de código). */
+  /** Atribución del texto (autor y obra, o fragmento de código). */
   readonly attribution: ReactNode;
   readonly ignoreAccents: boolean;
   readonly onNext: () => void;
@@ -16,14 +20,24 @@ interface ResultsPanelProps {
 
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div>
-      <dt className="text-sm text-zinc-500">{label}</dt>
-      <dd className="font-mono text-2xl text-zinc-100" title={hint}>
-        {value}
-      </dd>
+    <div className="flex flex-col gap-0.5">
+      <dt className="text-sm text-muted-foreground" title={hint}>
+        {label}
+      </dt>
+      <dd className="tabular text-2xl font-semibold">{value}</dd>
     </div>
   );
 }
+
+/** Al terminar, las cifras entran primero y luego el detalle: responde a la acción de acabar. */
+const reveal = {
+  hidden: { opacity: 0, y: 8 },
+  shown: (order: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: order * 0.08, duration: 0.25 },
+  }),
+};
 
 export function ResultsPanel({
   metrics,
@@ -32,70 +46,77 @@ export function ResultsPanel({
   onNext,
   onRepeat,
 }: ResultsPanelProps) {
+  const t = useTranslations('results');
   const nextRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     nextRef.current?.focus();
   }, []);
 
   return (
-    <section aria-labelledby="results-title" className="flex flex-col gap-6">
+    <section aria-labelledby="results-title" className="flex flex-col gap-8">
       <h2 id="results-title" className="sr-only">
-        Resultados
+        {t('title')}
       </h2>
-      <div className="flex flex-wrap items-end gap-x-10 gap-y-4">
-        <dl className="flex gap-10">
-          <div>
-            <dt className="text-sm text-zinc-500">wpm</dt>
-            <dd className="font-mono text-6xl text-amber-300">{Math.round(metrics.wpm)}</dd>
+      <motion.div
+        className="flex flex-wrap items-end gap-x-12 gap-y-4"
+        variants={reveal}
+        initial="hidden"
+        animate="shown"
+        custom={0}
+      >
+        <dl className="tabular flex gap-12">
+          <div className="flex flex-col">
+            <dt className="text-muted-foreground">{t('wpm')}</dt>
+            <dd className="text-7xl leading-none font-bold text-primary">
+              {Math.round(metrics.wpm)}
+            </dd>
           </div>
-          <div>
-            <dt className="text-sm text-zinc-500">precisión</dt>
-            <dd className="font-mono text-6xl text-amber-300">{Math.round(metrics.accuracy)}%</dd>
+          <div className="flex flex-col">
+            <dt className="text-muted-foreground">{t('accuracy')}</dt>
+            <dd className="text-7xl leading-none font-bold text-primary">
+              {Math.round(metrics.accuracy)}%
+            </dd>
           </div>
         </dl>
         {ignoreAccents && (
-          <p className="rounded bg-zinc-800 px-2 py-1 text-sm text-zinc-300">
-            Con «ignorar tildes»: no cuenta para rankings
-          </p>
+          <p className="max-w-xs rounded-md bg-muted px-3 py-2 text-sm">{t('ignoreAccentsNote')}</p>
         )}
-      </div>
+      </motion.div>
 
-      <WpmChart timeline={metrics.timeline} />
+      <motion.div variants={reveal} initial="hidden" animate="shown" custom={1}>
+        <WpmChart timeline={metrics.timeline} />
+      </motion.div>
 
-      <dl className="grid grid-cols-2 gap-4 sm:grid-cols-5">
-        <Stat label="bruto" value={String(Math.round(metrics.rawWpm))} />
-        <Stat label="consistencia" value={`${Math.round(metrics.consistency)}%`} />
+      <motion.dl
+        className="grid grid-cols-2 gap-6 sm:grid-cols-5"
+        variants={reveal}
+        initial="hidden"
+        animate="shown"
+        custom={2}
+      >
+        <Stat label={t('raw')} value={String(Math.round(metrics.rawWpm))} />
+        <Stat label={t('consistency')} value={`${Math.round(metrics.consistency)}%`} />
+        <Stat label={t('peak')} value={String(Math.round(metrics.peakWpm))} hint={t('peakHint')} />
         <Stat
-          label="pico"
-          value={String(Math.round(metrics.peakWpm))}
-          hint="Mejor ventana de 5 s"
+          label={t('time')}
+          value={t('timeValue', { seconds: (metrics.durationMs / 1_000).toFixed(1) })}
         />
-        <Stat label="tiempo" value={`${(metrics.durationMs / 1_000).toFixed(1)} s`} />
         <Stat
-          label="caracteres"
+          label={t('chars')}
           value={`${metrics.correctChars}/${metrics.incorrectKeystrokes}/${metrics.missedChars}`}
-          hint="correctos / errores / sin escribir"
+          hint={t('charsHint')}
         />
-      </dl>
+      </motion.dl>
 
-      <p className="text-sm text-zinc-400">{attribution}</p>
+      <p className="text-muted-foreground">{attribution}</p>
 
       <div className="flex gap-3">
-        <button
-          ref={nextRef}
-          type="button"
-          onClick={onNext}
-          className="rounded-md bg-amber-300 px-4 py-2 font-medium text-zinc-950 hover:bg-amber-200"
-        >
-          Siguiente texto
-        </button>
-        <button
-          type="button"
-          onClick={onRepeat}
-          className="rounded-md border border-zinc-700 px-4 py-2 text-zinc-200 hover:bg-zinc-800"
-        >
-          Repetir
-        </button>
+        <Button ref={nextRef} onClick={onNext} className="h-10 px-5">
+          {t('next')}
+        </Button>
+        <Button variant="outline" onClick={onRepeat} className="h-10 px-5">
+          {t('repeat')}
+        </Button>
       </div>
     </section>
   );

@@ -1,0 +1,15 @@
+packages:
+  - apps/*
+  - packages/*
+
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@swc/core'
+  - argon2
+  - esbuild
+  - sharp
+  - unrs-resolver
+
+# Telemetría de swagger-ui-dist: no se ejecuta.
+ignoredBuiltDependencies:
+  - '@scarf/scarf'

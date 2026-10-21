@@ -118,3 +118,68 @@ La atribución está en `packages/content/README.md`.
 ### Cobertura del motor
 
 Umbrales: 95 % de líneas, funciones y sentencias, y 85 % de ramas. Las ramas sin cubrir son los `?? valor` que exige `noUncheckedIndexedAccess`.
+
+## Fase 2
+
+### Dirección visual: "tipos móviles"
+
+Los textos son literatura de imprenta, así que la identidad sale de la imprenta y la máquina de escribir:
+
+- **Colores:** fondo de tinta azul (`#161a2b`), texto de papel (`#ece6d8`) y acento de latón (`#d9a441`), como los tipos metálicos. El rojo, como la cinta bicolor de la máquina de escribir, se reserva para los errores.
+- **Inicio:** el logo se compone letra a letra como tipos en una línea. Es la única animación automática.
+- **Carreras (Fase 3):** cada corredor será un tipo con su inicial.
+
+Se evitó a propósito el combo genérico de fondo casi negro con un acento chillón y cifras en monoespaciada. Las cifras van en la sans con números tabulares; la monoespaciada queda solo para el texto de juego.
+
+### Tipografías
+
+- **Interfaz:** Schibsted Grotesk.
+- **Texto de juego:** JetBrains Mono por defecto, con IBM Plex Mono, Fira Code o Geist Mono a elección. Solo la tipografía por defecto se precarga.
+- **Tamaños:** cuatro (20, 26, 32 y 40 px).
+
+### Seis temas con contraste verificado
+
+Los temas son Tinta (por defecto), Día, Grafito, Bosque, Ciruela y Alto contraste. `themes.test.ts` exige:
+
+- 7:1 para el texto principal;
+- 4.5:1 para el texto secundario, el pendiente, los errores y el acento como texto;
+- 4.5:1 para el texto sobre los botones.
+
+Además, axe revisa el contraste real de la práctica en los seis temas.
+
+### Rutas con prefijo de idioma siempre
+
+Las rutas son `/es/...` y `/en/...`, con `localePrefix: 'always'`. Cada idioma se prerenderiza estático y la URL indica el idioma. La raíz redirige según la cookie o `Accept-Language`. El idioma de la interfaz es el de la URL, y la preferencia guardada lo sigue.
+
+### Cambio de idioma con navegación completa
+
+Navegar con el router a otro idioma re-renderiza el layout raíz en el cliente, y React avisa por el `<script>` del tema en `<head>`. Ese script es necesario para que no haya destello: `next/script` con `beforeInteractive` lo ejecuta después de leer el HTML. Como cambiar de idioma es poco frecuente, se hace con una navegación completa.
+
+### Preferencias del invitado
+
+Todas las preferencias de la spec (sección 10) están en `userSettingsSchema` (`@tecleo/shared`), con un valor por defecto por campo y `.catch()`. Un JSON viejo, parcial o manipulado se corrige campo por campo en lugar de fallar. Se guardan en `localStorage`; en la Fase 4 se sincronizarán con el servidor usando el mismo esquema.
+
+El idioma del texto, las reglas e "ignorar tildes" son preferencias generales. La barra de la práctica las edita directamente, así no hay dos fuentes de verdad.
+
+### Pantallas de fases futuras
+
+La spec pide que todas las pantallas existan en esta fase, pero también prohíbe funciones simuladas. Carreras, salas, rankings y perfil explican qué harán y llevan a la práctica. Entrar y registrarse muestran el formulario real con el envío deshabilitado y un aviso explícito. Nada finge datos ni respuestas.
+
+### "Jugar ahora"
+
+Lleva a la práctica hasta que existan las carreras.
+
+### Modo concentración y atajos
+
+- **Modo concentración:** mientras se escribe, todo lo marcado con `data-chrome` (cabecera, pie, opciones y estadísticas) se desvanece.
+- **Esc:** abandona el intento y reinicia el mismo texto.
+- **Tab + Enter:** usa el orden de foco nativo.
+- **Pantallas táctiles:** las pistas de teclado se ocultan.
+
+### Sonidos sintetizados
+
+Hay tres estilos (clic, suave y máquina de escribir), generados con Web Audio sin archivos de audio. Distinguen acierto, espacio y error. Vienen desactivados por defecto.
+
+### Último segundo corto en las métricas
+
+Encontrado al revisar la gráfica: si la prueba dura, por ejemplo, 2,05 s, el tramo final de 50 ms daba un WPM bruto de miles. Ahora un último tramo de menos de 500 ms se une al segundo anterior, y la línea de tiempo, la consistencia y el pico salen de los mismos tramos.

@@ -2,7 +2,7 @@
 
 Carreras de mecanografía en tiempo real contra otras personas o contra bots. Aparece un texto, lo escribes y ves en vivo lo correcto, lo incorrecto y lo pendiente mientras tu corredor avanza en la pista junto a los demás.
 
-> Estado: **Fase 1**. Ya se puede practicar sin cuenta ni servidor (por tiempo, por palabras o con textos de dominio público y código). Ver el estado de cada fase en [`CLAUDE.md`](CLAUDE.md).
+> Estado: **Fase 2**. Se puede practicar sin cuenta ni servidor (por tiempo, por palabras o con textos de dominio público y código), en español o inglés, con seis temas y la configuración guardada en el navegador. Ver el estado de cada fase en [`CLAUDE.md`](CLAUDE.md).
 
 ## Correr en local
 
@@ -14,7 +14,7 @@ pnpm db:up
 pnpm dev
 ```
 
-- Web: http://localhost:3100 (práctica en `/practice`)
+- Web: http://localhost:3100 (redirige a `/es` o `/en`; práctica en `/es/practice`)
 - API: http://localhost:4100 · Swagger: http://localhost:4100/docs
 
 Las variables de entorno tienen valores por defecto para desarrollo; ver [`.env.example`](.env.example) para cambiarlas.

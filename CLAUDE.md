@@ -42,24 +42,25 @@ e2e                    @tecleo/e2e — Playwright
 
 ### Web
 
-- `features/typing`: área de escritura (textarea oculto + render propio, ventana de 3 líneas, cursor por `transform` medido en `useLayoutEffect`).
-- `features/practice`: store Zustand (`practice-store.ts`) y generación de textos (`practice-config.ts`). `?seed=N` reproduce un texto; la semilla se conserva al cambiar opciones.
-- `features/results`: panel y gráfica (Recharts).
-
-- `engine` es la **única fuente de verdad** de la lógica de escritura y métricas; lo usan web y server. Debe ser determinista (RNG con semilla en `engine/src/rng`).
-- `shared` define los contratos: el server responde tipos de `shared` y la web valida con los mismos esquemas (`apps/web/src/lib/api.ts`). Swagger se genera desde Zod (`apps/server/src/common/zod-openapi.ts`).
-- Los paquetes se compilan con tsdown a ESM (`dist/index.mjs` + `.d.mts`). Turbo compila las dependencias antes de `dev`, `lint`, `typecheck` y `test`.
-- La web llama a la API por el proxy `/api/*` de Next (rewrite a `SERVER_URL`) para que las cookies sean de primera parte.
-- El estado de las salas irá detrás de la interfaz `RoomStore` (en memoria; Redis más adelante).
+- Rutas en `src/app/[locale]/…` (`/es`, `/en`); el layout raíz es `app/[locale]/layout.tsx` y lee el idioma con `next/root-params`. `src/proxy.ts` (antes "middleware") redirige las rutas sin idioma. Mensajes en `messages/{es,en}.json` (mismas claves, lo verifica un test).
+- Temas: `src/theme/themes.ts` es la única fuente de los tokens; genera las variables CSS (inyectadas en `<head>`) y un test verifica contraste WCAG AA. El tema activo es `data-theme` en `<html>`; un script en `<head>` lo aplica antes del primer pintado.
+- Preferencias: `src/settings/settings-store.ts` (Zustand + `localStorage`, esquema `userSettingsSchema` de `@tecleo/shared`). Los stores persistidos usan `skipHydration` y se rehidratan tras montar.
+- Componentes base: shadcn/ui (Radix) en `src/components/ui` — generados con la CLI, se pueden editar. Layout en `src/components/layout`.
+- `features/typing`: área de escritura (textarea oculto + render propio, cursor por `transform` medido en el DOM, re-medido con `ResizeObserver`).
+- `features/practice`: store (`practice-store.ts`, opciones persistidas) y generación de textos. `?seed=N` reproduce un texto. Idioma del texto y reglas viven en las preferencias.
+- `features/results`: panel y gráfica (Recharts con colores de los tokens del tema activo).
+- Pantallas que dependen de fases futuras (carreras, salas, rankings, perfil) usan `components/upcoming.tsx`: explican qué harán y llevan a la práctica, sin datos simulados. Entrar/registrarse muestran el formulario con el envío deshabilitado y un aviso.
+- Atajos: Esc reinicia el intento; Tab lleva a "Nuevo texto" y Enter lo activa.
 
 ## Convenciones
 
 - TypeScript `strict` + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` en todo el monorepo (`tsconfig.base.json`). Sin `any`; si un cast es inevitable, comentario que lo justifique.
 - TypeScript 6.0, no 7: typescript-eslint 8.72 solo admite `<6.1`.
 - ESM en todas partes. En `server` y `packages`, los imports relativos llevan extensión `.js`.
-- Identificadores en inglés; comentarios, docs y textos de UI en español (la UI pasará por next-intl en la Fase 2).
+- Identificadores en inglés; comentarios y docs en español. Todo texto de interfaz va en `messages/*.json` (nunca literal en el JSX).
+- Colores solo con tokens (`bg-background`, `text-primary`, `text-pending`, `text-error`…), nunca con la paleta de Tailwind.
 - Tests con Vitest junto al código (`*.test.ts` en paquetes y web, `*.spec.ts` en server, `test/*.e2e-spec.ts` para integración HTTP). El motor exige cobertura ≥ 95 % de líneas.
-- E2E en `e2e/tests`: localizar por rol y texto accesible; `#typing-target` (solo lectores de pantalla) contiene el texto completo a escribir.
+- E2E en `e2e/tests`: localizar por rol y texto accesible; `[data-typing-target]` (solo lectores de pantalla) contiene el texto completo a escribir. `site.spec.ts` pasa axe (WCAG 2.1 AA) por todas las pantallas.
 - Validación de entradas siempre con esquemas Zod de `shared`.
 - Prettier: comillas simples, `;`, ancho 100. ESLint con reglas type-checked estrictas.
 - Commits: Conventional Commits en español, `tipo(scope): descripción`, un solo `-m`.
@@ -67,20 +68,20 @@ e2e                    @tecleo/e2e — Playwright
 
 ## Estado de las fases
 
-| Fase                      | Estado       | Notas                                                                                                                      |
-| ------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| 0 – Base                  | ✅ completa  | Monorepo, tooling, CI, docker-compose, `/health` + indicador "conectando al servidor…"                                     |
-| 1 – Motor y práctica solo | ✅ completa  | Motor + 68 tests (97 % cobertura), corpus 160 textos/idioma, práctica tiempo/palabras/texto, resultados con gráfica, 8 E2E |
-| 2 – Diseño                | ⏳ siguiente |                                                                                                                            |
-| 3 – Bots locales          | pendiente    |                                                                                                                            |
-| 4 – Backend y cuentas     | pendiente    |                                                                                                                            |
-| 5 – Multijugador          | pendiente    |                                                                                                                            |
-| 6 – Contenido extra       | pendiente    |                                                                                                                            |
-| 7 – Pulido y despliegue   | pendiente    |                                                                                                                            |
+| Fase                      | Estado       | Notas                                                                                                                                |
+| ------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 0 – Base                  | ✅ completa  | Monorepo, tooling, CI, docker-compose, `/health` + indicador "conectando al servidor…"                                               |
+| 1 – Motor y práctica solo | ✅ completa  | Motor + 69 tests (97 % cobertura), corpus 160 textos/idioma, práctica tiempo/palabras/texto, resultados con gráfica                  |
+| 2 – Diseño                | ✅ completa  | 6 temas con contraste AA verificado, tipografías configurables, i18n es/en, configuración local, todas las pantallas, 34 E2E con axe |
+| 3 – Bots locales          | ⏳ siguiente |                                                                                                                                      |
+| 4 – Backend y cuentas     | pendiente    |                                                                                                                                      |
+| 5 – Multijugador          | pendiente    |                                                                                                                                      |
+| 6 – Contenido extra       | pendiente    |                                                                                                                                      |
+| 7 – Pulido y despliegue   | pendiente    |                                                                                                                                      |
 
 ### Pendiente explícito
 
 - Teclas muertas con teclado físico: el camino de composición está cubierto con eventos sintéticos (unit + E2E), falta confirmarlo a mano en macOS/Windows con distribución española y latinoamericana.
-- Fase 2: configuración persistente (tema, fuente, estilo de cursor, mostrar/ocultar WPM, sonidos, modo concentración), i18n es/en, aviso en móvil, navegación entre pantallas. Hoy la práctica usa valores por defecto en memoria.
-- Fase 4: guardar resultados del invitado en `localStorage` para migrarlos al registrarse; seed del corpus en la base de datos.
-- La base de datos no se usa todavía (Prisma entra en la Fase 4); el job de CI con servicio Postgres se agrega entonces.
+- "Jugar ahora" lleva a la práctica hasta que existan las carreras (Fase 3: bots; Fase 5: matchmaking).
+- Fase 4: cuentas reales (los formularios de entrar/registrarse tienen el envío deshabilitado), sincronizar preferencias con `/me/settings`, guardar resultados del invitado en `localStorage` para migrarlos al registrarse, seed del corpus en la base de datos, job de CI con Postgres.
+- La preferencia "distribución del teclado" se guarda pero se usa recién con el mapa de calor (Fase 4); "dificultad de bots por defecto", en la Fase 3.

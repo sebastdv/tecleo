@@ -14,12 +14,21 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  // En CI se prueba el build de producción; en local se reutiliza `pnpm dev` si está corriendo.
-  webServer: {
-    command: isCI ? 'pnpm --filter @tecleo/web start' : 'pnpm --filter @tecleo/web dev',
-    cwd: '..',
-    port: PORT,
-    reuseExistingServer: !isCI,
-    timeout: 120_000,
-  },
+  // En CI se prueban los builds de producción; en local se reutiliza `pnpm dev` si está corriendo.
+  webServer: [
+    {
+      command: isCI ? 'pnpm --filter @tecleo/server start' : 'pnpm --filter @tecleo/server dev',
+      cwd: '..',
+      url: 'http://localhost:4100/health',
+      reuseExistingServer: !isCI,
+      timeout: 120_000,
+    },
+    {
+      command: isCI ? 'pnpm --filter @tecleo/web start' : 'pnpm --filter @tecleo/web dev',
+      cwd: '..',
+      port: PORT,
+      reuseExistingServer: !isCI,
+      timeout: 120_000,
+    },
+  ],
 });

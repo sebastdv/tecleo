@@ -294,3 +294,9 @@ El tinte se limita al 45 % para que la letra siga leyéndose en todos los temas.
 ### Formularios que no filtran credenciales
 
 El formulario de acceso usa `method="post"` y deja el botón deshabilitado hasta hidratar. Así un envío nativo, antes de que cargue el JavaScript, nunca pone el correo y la contraseña en la URL.
+
+### Variables de entorno a través de Turbo
+
+Turbo 2 corre las tareas en modo estricto: solo les llegan las variables declaradas. `DATABASE_URL_TEST` no llegaba a los tests del server en CI, que intentaban la base local por defecto y fallaban. En local pasaban, porque esa base existe. Ahora está en `passThroughEnv` de la tarea `test`.
+
+Se comprobó en un clon limpio con una URL inalcanzable: sin el cambio, los tests la ignoraban; con el cambio, fallan como corresponde. Toda variable nueva que necesite una tarea de Turbo tiene que declararse en `turbo.json`.

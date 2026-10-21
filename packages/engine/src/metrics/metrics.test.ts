@@ -108,6 +108,29 @@ describe('analyze', () => {
     expect(metrics.wpm).toBeCloseTo(wpmFrom(7, 15_000), 6);
   });
 
+  it('un último tramo de menos de medio segundo se une al segundo anterior', () => {
+    // 2,05 s: sin unir, el tramo final de 50 ms daría un WPM bruto absurdo.
+    let state = createTypingState({ text: 'abcdefghij' });
+    for (let i = 0; i < 9; i++)
+      state = applyInput(state, { type: 'insert', text: 'abcdefghi'.charAt(i) }, i * 250);
+    state = applyInput(state, { type: 'insert', text: 'j' }, 2_050);
+    const metrics = analyze(state);
+    expect(metrics.durationMs).toBe(2_050);
+    expect(metrics.timeline).toHaveLength(2);
+    // Segundo 2: de 1000 a 2050 ms, 6 pulsaciones (t = 1000, 1250, 1500, 1750, 2000, 2050).
+    expect(metrics.timeline[1]?.raw).toBeCloseTo(wpmFrom(6, 1_050), 6);
+    expect(Math.max(...metrics.timeline.map((sample) => sample.raw))).toBeLessThan(100);
+    // Con el tramo de 50 ms separado, la consistencia caería a 0.
+    expect(metrics.consistency).toBeGreaterThan(50);
+  });
+
+  it('una prueba de menos de medio segundo tiene un solo tramo', () => {
+    const state = typeText(createTypingState({ text: 'ab' }), 'ab', 0, 200);
+    const metrics = analyze(state);
+    expect(metrics.timeline).toHaveLength(1);
+    expect(metrics.timeline[0]?.second).toBe(1);
+  });
+
   it('solo analiza pruebas terminadas', () => {
     const running = typeText(createTypingState({ text: 'hola' }), 'ho');
     expect(() => analyze(running)).toThrow();
@@ -124,11 +147,6 @@ describe('consistency', () => {
     expect(consistency([200, 0, 0, 0, 0, 0])).toBe(0);
     expect(consistency([0, 0])).toBe(0);
     expect(consistency([])).toBe(0);
-  });
-
-  it('descarta un último segundo de menos de medio segundo', () => {
-    expect(consistency([60, 60, 5], 300)).toBe(100);
-    expect(consistency([60, 60, 5], 800)).toBeLessThan(100);
   });
 });
 

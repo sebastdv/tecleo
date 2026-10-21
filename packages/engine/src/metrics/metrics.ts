@@ -5,6 +5,7 @@ import { BACKSPACE, DELETE_WORD, type Keystroke, type TypingState } from '../typ
 const CHARS_PER_WORD = 5;
 const MS_PER_MINUTE = 60_000;
 const PEAK_WINDOW_SECONDS = 5;
+const MIN_LAST_SECOND_MS = 500;
 
 export function wpmFrom(chars: number, durationMs: number): number {
   return durationMs > 0 ? chars / CHARS_PER_WORD / (durationMs / MS_PER_MINUTE) : 0;
@@ -142,8 +143,15 @@ export function analyze(state: TypingState): RaceMetrics {
     throw new Error('Solo se puede analizar una prueba terminada');
   }
   const durationMs = state.finishedAt - state.startedAt;
-  const seconds = Math.max(1, Math.ceil(durationMs / 1_000));
-  const boundaryOf = (second: number) => Math.min(second * 1_000, durationMs);
+  // Un último tramo de menos de medio segundo se une al segundo anterior: con tan poco tiempo
+  // su WPM se dispara y distorsiona la gráfica, la consistencia y el pico.
+  const wholeSeconds = Math.ceil(durationMs / 1_000);
+  const remainderMs = durationMs - (wholeSeconds - 1) * 1_000;
+  const seconds = Math.max(
+    1,
+    wholeSeconds > 1 && remainderMs < MIN_LAST_SECOND_MS ? wholeSeconds - 1 : wholeSeconds,
+  );
+  const boundaryOf = (second: number) => (second >= seconds ? durationMs : second * 1_000);
 
   const inserted = new Array<number>(seconds).fill(0);
   const errors = new Array<number>(seconds).fill(0);
@@ -189,7 +197,7 @@ export function analyze(state: TypingState): RaceMetrics {
     wpm,
     rawWpm: wpmFrom(typedChars, durationMs),
     accuracy: accuracy(state),
-    consistency: consistency(rawPerSecond, bucketMs(seconds - 1)),
+    consistency: consistency(rawPerSecond),
     peakWpm: peakWpm(correctAt, seconds, boundaryOf, wpm),
     durationMs,
     correctChars: correct,
@@ -204,15 +212,12 @@ export function analyze(state: TypingState): RaceMetrics {
 
 /**
  * Consistencia = 100 − coeficiente de variación (%) del WPM bruto por segundo, acotado a 0–100.
- * El último segundo se descarta si duró menos de medio segundo: con tan poco tiempo distorsiona.
  */
-export function consistency(rawPerSecond: readonly number[], lastBucketMs = 1_000): number {
-  const samples =
-    rawPerSecond.length > 1 && lastBucketMs < 500 ? rawPerSecond.slice(0, -1) : [...rawPerSecond];
-  if (samples.length === 0) return 0;
-  const mean = samples.reduce((sum, v) => sum + v, 0) / samples.length;
+export function consistency(rawPerSecond: readonly number[]): number {
+  if (rawPerSecond.length === 0) return 0;
+  const mean = rawPerSecond.reduce((sum, v) => sum + v, 0) / rawPerSecond.length;
   if (mean === 0) return 0;
-  const variance = samples.reduce((sum, v) => sum + (v - mean) ** 2, 0) / samples.length;
+  const variance = rawPerSecond.reduce((sum, v) => sum + (v - mean) ** 2, 0) / rawPerSecond.length;
   const coefficient = (Math.sqrt(variance) / mean) * 100;
   return Math.min(100, Math.max(0, 100 - coefficient));
 }

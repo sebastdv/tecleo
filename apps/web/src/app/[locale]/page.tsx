@@ -6,7 +6,7 @@ import { Link } from '@/i18n/navigation';
 
 const MODES = [
   { key: 'practice', href: '/practice' },
-  { key: 'bots', href: null },
+  { key: 'bots', href: '/race' },
   { key: 'public', href: null },
   { key: 'private', href: null },
   { key: 'ghost', href: null },
@@ -21,9 +21,9 @@ export default function HomePage() {
       <section className="flex flex-col items-start gap-8">
         <ComposedTitle text="tecleo" />
         <p className="max-w-xl text-xl leading-relaxed text-muted-foreground">{t('tagline')}</p>
-        {/* Hasta que existan las carreras (fases 3 y 5), jugar lleva a la práctica. */}
+        {/* Hasta que exista el matchmaking (Fase 5), jugar es una carrera contra bots. */}
         <Button size="lg" asChild className="h-12 px-6 text-base">
-          <Link href="/practice">{t('playNow')}</Link>
+          <Link href="/race">{t('playNow')}</Link>
         </Button>
       </section>
 

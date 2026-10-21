@@ -40,7 +40,7 @@ test.describe('navegación', () => {
     const nav = page.getByRole('navigation', { name: 'Navegación principal' });
     for (const [name, path, heading] of [
       ['Practicar', '/es/practice', 'Práctica'],
-      ['Carreras', '/es/race', 'Carreras'],
+      ['Carreras', '/es/race', 'Carrera contra bots'],
       ['Rankings', '/es/leaderboards', 'Rankings'],
     ] as const) {
       await nav.getByRole('link', { name }).click();
@@ -56,12 +56,6 @@ test.describe('navegación', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Crear cuenta' })).toBeVisible();
     await page.getByRole('link', { name: 'Inicio: Tecleo' }).click();
     await expect(page).toHaveURL(/\/es$/);
-  });
-
-  test('jugar ahora lleva a la práctica', async ({ page }) => {
-    await page.goto('/es');
-    await page.getByRole('link', { name: 'Jugar ahora' }).click();
-    await expect(page).toHaveURL('/es/practice');
   });
 
   test('una ruta desconocida muestra el 404 localizado', async ({ page }) => {

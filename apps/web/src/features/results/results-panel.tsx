@@ -16,6 +16,9 @@ interface ResultsPanelProps {
   readonly ignoreAccents: boolean;
   readonly onNext: () => void;
   readonly onRepeat: () => void;
+  /** Textos de los botones; por defecto los de la práctica. */
+  readonly nextLabel?: string;
+  readonly repeatLabel?: string;
 }
 
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
@@ -45,11 +48,14 @@ export function ResultsPanel({
   ignoreAccents,
   onNext,
   onRepeat,
+  nextLabel,
+  repeatLabel,
 }: ResultsPanelProps) {
   const t = useTranslations('results');
   const nextRef = useRef<HTMLButtonElement>(null);
+  // Foco listo para Enter sin mover la página: arriba quedan el podio o las cifras principales.
   useEffect(() => {
-    nextRef.current?.focus();
+    nextRef.current?.focus({ preventScroll: true });
   }, []);
 
   return (
@@ -112,10 +118,10 @@ export function ResultsPanel({
 
       <div className="flex gap-3">
         <Button ref={nextRef} onClick={onNext} className="h-10 px-5">
-          {t('next')}
+          {nextLabel ?? t('next')}
         </Button>
         <Button variant="outline" onClick={onRepeat} className="h-10 px-5">
-          {t('repeat')}
+          {repeatLabel ?? t('repeat')}
         </Button>
       </div>
     </section>

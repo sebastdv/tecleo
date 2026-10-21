@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import { useTranslations } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 
-import { Upcoming } from '@/components/upcoming';
+import { PageContainer } from '@/components/layout/page-container';
+import { PageHeader } from '@/components/layout/page-header';
+import { RaceScreen } from '@/features/race/race-screen';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('race');
@@ -11,5 +13,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function RacePage() {
   const t = useTranslations('race');
-  return <Upcoming title={t('title')} description={t('description')} />;
+  return (
+    <PageContainer className="max-w-5xl">
+      <div data-chrome>
+        <PageHeader title={t('title')} description={t('description')} />
+      </div>
+      <RaceScreen />
+    </PageContainer>
+  );
 }

@@ -220,8 +220,49 @@
     "practiceCta": "Ir a practicar"
   },
   "race": {
-    "title": "Carreras",
-    "description": "Corre contra bots o contra otras personas en una pista con tu tipo de letra como corredor."
+    "title": "Carrera contra bots",
+    "description": "Compite contra hasta cinco bots con ritmo humano. Funciona sin conexión.",
+    "setupLabel": "Opciones de la carrera",
+    "botCount": "Bots",
+    "level": "Dificultad",
+    "levels": {
+      "beginner": "principiante",
+      "intermediate": "intermedio",
+      "advanced": "avanzado",
+      "expert": "experto",
+      "legend": "leyenda",
+      "mixed": "mixta"
+    },
+    "mixedHint": "Cada bot con un nivel distinto, al azar.",
+    "length": "Longitud del texto",
+    "start": "Empezar carrera",
+    "loading": "Preparando la carrera…",
+    "track": "Pista",
+    "you": "Tú",
+    "botLabel": "(bot)",
+    "progress": "{percent} % del texto",
+    "position": "{position}.º",
+    "wpmValue": "{wpm} ppm",
+    "go": "¡Ya!",
+    "podium": "Podio",
+    "placeLabel": "Puesto",
+    "standings": "Clasificación",
+    "columns": {
+      "position": "Puesto",
+      "runner": "Corredor",
+      "wpm": "ppm",
+      "accuracy": "Precisión",
+      "time": "Tiempo"
+    },
+    "dnf": "No terminó",
+    "seconds": "{seconds} s",
+    "yourPlace": "Puesto {position} de {total}",
+    "timeUp": "Se acabó el tiempo",
+    "another": "Otra carrera",
+    "rematch": "Revancha",
+    "leave": "Salir",
+    "leaveShortcut": "Esc sale de la carrera",
+    "loadError": "No se pudo preparar la carrera. Recarga la página para intentarlo de nuevo."
   },
   "room": {
     "title": "Sala {code}",

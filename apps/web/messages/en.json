@@ -220,8 +220,49 @@
     "practiceCta": "Go practice"
   },
   "race": {
-    "title": "Races",
-    "description": "Race against bots or other people on a track where your type block is the runner."
+    "title": "Race against bots",
+    "description": "Race up to five bots with a human rhythm. Works offline.",
+    "setupLabel": "Race options",
+    "botCount": "Bots",
+    "level": "Difficulty",
+    "levels": {
+      "beginner": "beginner",
+      "intermediate": "intermediate",
+      "advanced": "advanced",
+      "expert": "expert",
+      "legend": "legend",
+      "mixed": "mixed"
+    },
+    "mixedHint": "Each bot gets a different random level.",
+    "length": "Text length",
+    "start": "Start race",
+    "loading": "Getting the race ready…",
+    "track": "Track",
+    "you": "You",
+    "botLabel": "(bot)",
+    "progress": "{percent}% of the text",
+    "position": "{position, selectordinal, one {#st} two {#nd} few {#rd} other {#th}}",
+    "wpmValue": "{wpm} wpm",
+    "go": "Go!",
+    "podium": "Podium",
+    "placeLabel": "Place",
+    "standings": "Standings",
+    "columns": {
+      "position": "Place",
+      "runner": "Runner",
+      "wpm": "wpm",
+      "accuracy": "Accuracy",
+      "time": "Time"
+    },
+    "dnf": "Did not finish",
+    "seconds": "{seconds} s",
+    "yourPlace": "Place {position} of {total}",
+    "timeUp": "Time's up",
+    "another": "Another race",
+    "rematch": "Rematch",
+    "leave": "Leave",
+    "leaveShortcut": "Esc leaves the race",
+    "loadError": "The race couldn't be set up. Reload the page to try again."
   },
   "room": {
     "title": "Room {code}",

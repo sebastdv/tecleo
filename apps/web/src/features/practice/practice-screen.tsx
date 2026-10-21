@@ -1,16 +1,16 @@
 'use client';
 
-import type { TypingAction } from '@tecleo/engine';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { playKeySound } from '@/lib/key-sound';
 import { useSettings, useSettingsStore } from '@/settings/settings-store';
 
 import { ResultsPanel } from '../results/results-panel';
 import { LiveStats } from '../typing/live-stats';
 import { TypingArea } from '../typing/typing-area';
+import { useFocusMode } from '../typing/use-focus-mode';
+import { useSoundedInput } from '../typing/use-sounded-input';
 import { ConfigBar } from './config-bar';
 import type { PracticeText } from './practice-config';
 import { usePracticeStore } from './practice-store';
@@ -27,6 +27,8 @@ function Attribution({ source }: { source: PracticeText }) {
   if (source.snippet) return <>{t('codeSnippet', { title: source.snippet.title })}</>;
   return null;
 }
+
+const currentTyping = () => usePracticeStore.getState().typing;
 
 /** `?seed=123` reproduce el mismo texto (para compartir y para los tests E2E). */
 function seedFromUrl(): number | undefined {
@@ -69,16 +71,7 @@ export function PracticeScreen() {
     };
   }, [timed, tick]);
 
-  // Modo concentración: mientras se escribe se esconde todo lo marcado con data-chrome.
-  const focusing = settings.focusMode && typing?.phase === 'running';
-  useEffect(() => {
-    const root = document.documentElement;
-    if (focusing) root.dataset.focusMode = '';
-    else delete root.dataset.focusMode;
-    return () => {
-      delete root.dataset.focusMode;
-    };
-  }, [focusing]);
+  useFocusMode(settings.focusMode && typing?.phase === 'running');
 
   // Esc abandona el intento y vuelve a empezar el mismo texto.
   useEffect(() => {
@@ -92,20 +85,7 @@ export function PracticeScreen() {
     };
   }, [repeat]);
 
-  const onAction = useCallback(
-    (action: TypingAction, timestamp: number) => {
-      const before = usePracticeStore.getState().typing?.keystrokes.length ?? 0;
-      input(action, timestamp);
-      if (action.type !== 'insert') return;
-      const { keySound, soundVolume } = useSettingsStore.getState().settings;
-      const last = usePracticeStore.getState().typing?.keystrokes.at(-1);
-      const after = usePracticeStore.getState().typing?.keystrokes.length ?? 0;
-      if (!last || after === before) return;
-      const kind = !last.correct ? 'error' : last.input === ' ' ? 'space' : 'correct';
-      playKeySound(keySound, soundVolume, kind);
-    },
-    [input],
-  );
+  const onAction = useSoundedInput(input, currentTyping);
 
   return (
     <div className="flex flex-col gap-10">

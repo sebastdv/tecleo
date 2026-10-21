@@ -1,0 +1,259 @@
+{
+  "meta": {
+    "title": "Tecleo",
+    "description": "Real-time typing races against people and bots, in Spanish and English."
+  },
+  "nav": {
+    "skipToContent": "Skip to content",
+    "primary": "Main navigation",
+    "home": "Home",
+    "practice": "Practice",
+    "race": "Races",
+    "leaderboards": "Leaderboards",
+    "settings": "Settings",
+    "login": "Log in",
+    "openMenu": "Open menu",
+    "language": "Interface language",
+    "theme": "Theme"
+  },
+  "footer": {
+    "credits": "Texts from public domain works taken from <gutenberg>Project Gutenberg</gutenberg>. Word lists from <frequency>FrequencyWords</frequency> (CC BY-SA 4.0).",
+    "source": "Source code"
+  },
+  "serverStatus": {
+    "connecting": "Connecting to the server…",
+    "online": "Server online (v{version})",
+    "offline": "Can't reach the server. Practice still works."
+  },
+  "home": {
+    "tagline": "Type real texts, see your mistakes as you make them, and race against people or bots.",
+    "playNow": "Play now",
+    "modesTitle": "Game modes",
+    "available": "Available",
+    "soon": "Soon",
+    "modes": {
+      "practice": {
+        "name": "Free practice",
+        "description": "By time, by word count or with a full text. No account and no connection needed."
+      },
+      "bots": {
+        "name": "Against bots",
+        "description": "Up to five bots with a human rhythm, from beginner to legend."
+      },
+      "public": {
+        "name": "Public race",
+        "description": "Join an open room in your language; bots fill the empty spots."
+      },
+      "private": {
+        "name": "Private room",
+        "description": "Share a six-letter code and play with whoever you want."
+      },
+      "ghost": {
+        "name": "Ghost",
+        "description": "Race the replay of your best run or someone else's."
+      },
+      "daily": {
+        "name": "Daily challenge",
+        "description": "The same text for everyone all day, with its own leaderboard."
+      },
+      "targeted": {
+        "name": "Targeted practice",
+        "description": "Drills built from the keys and letter pairs you miss the most."
+      }
+    }
+  },
+  "practice": {
+    "title": "Practice",
+    "newText": "New text",
+    "newTextShortcut": "Tab + Enter",
+    "restartShortcut": "Esc restarts",
+    "loadError": "The text couldn't be loaded. Reload the page to try again.",
+    "mobileNotice": "Use a physical keyboard to type comfortably.",
+    "codeSnippet": "Code snippet: {title}",
+    "config": {
+      "label": "Practice options",
+      "textLanguage": "Text language",
+      "mode": "Mode",
+      "modes": {
+        "time": "time",
+        "words": "words",
+        "text": "text"
+      },
+      "duration": "Duration",
+      "seconds": "{value} s",
+      "wordCount": "Word count",
+      "kind": "Text type",
+      "kinds": {
+        "quote": "quote",
+        "code": "code"
+      },
+      "length": "Length",
+      "lengths": {
+        "any": "any",
+        "short": "short",
+        "medium": "medium",
+        "long": "long"
+      },
+      "listSize": "Most common words",
+      "lists": {
+        "200": "top 200",
+        "1000": "top 1k",
+        "5000": "top 5k"
+      },
+      "punctuation": "punctuation",
+      "numbers": "numbers",
+      "rules": "Typing rules",
+      "ruleNames": {
+        "free": "free",
+        "strict": "strict"
+      },
+      "ignoreAccents": "ignore accents"
+    }
+  },
+  "typing": {
+    "inputLabel": "Text to type",
+    "focusOverlay": "Click or press any key to continue",
+    "timeLeft": "Time left",
+    "progress": "Progress",
+    "wpm": "wpm",
+    "wpmLong": "words per minute",
+    "accuracy": "accuracy"
+  },
+  "results": {
+    "title": "Results",
+    "wpm": "wpm",
+    "accuracy": "accuracy",
+    "raw": "raw",
+    "consistency": "consistency",
+    "peak": "peak",
+    "peakHint": "Best 5-second window",
+    "time": "time",
+    "timeValue": "{seconds} s",
+    "chars": "characters",
+    "charsHint": "correct / errors / missed",
+    "ignoreAccentsNote": "With “ignore accents” on, this result doesn't count for leaderboards.",
+    "next": "Next text",
+    "repeat": "Repeat",
+    "chartLabel": "Words per minute each second",
+    "chartSecond": "Second {second}",
+    "chartWpm": "wpm",
+    "chartRaw": "raw",
+    "chartErrors": "errors"
+  },
+  "settings": {
+    "title": "Settings",
+    "savedLocally": "Changes are saved in this browser right away.",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "themes": {
+      "ink": "Ink",
+      "day": "Day",
+      "graphite": "Graphite",
+      "forest": "Forest",
+      "plum": "Plum",
+      "contrast": "High contrast"
+    },
+    "gameFont": "Text typeface",
+    "gameFontSize": "Text size",
+    "sizes": {
+      "s": "Small",
+      "m": "Medium",
+      "l": "Large",
+      "xl": "Extra large"
+    },
+    "caretStyle": "Caret",
+    "carets": {
+      "line": "Line",
+      "block": "Block",
+      "underline": "Underline"
+    },
+    "preview": "This is how the text looks while you type.",
+    "typing": "Typing",
+    "typingMode": "Practice rules",
+    "typingModeHint": "Races always use strict rules.",
+    "typingModes": {
+      "free": "Free: space moves to the next word even with mistakes",
+      "strict": "Strict: fix mistakes before moving on"
+    },
+    "ignoreAccents": "Ignore accents",
+    "ignoreAccentsHint": "Accepts “a” for “á” and “n” for “ñ”. Results don't count for leaderboards.",
+    "showLiveStats": "Show wpm and accuracy while typing",
+    "focusMode": "Focus mode",
+    "focusModeHint": "Hides everything but the text while you type.",
+    "sound": "Sound",
+    "keySound": "Key sound",
+    "keySounds": {
+      "off": "No sound",
+      "click": "Click",
+      "soft": "Soft",
+      "typewriter": "Typewriter"
+    },
+    "volume": "Volume",
+    "testSound": "Test sound",
+    "language": "Language",
+    "interfaceLanguage": "Interface language",
+    "textLanguage": "Default text language",
+    "languages": {
+      "es": "Spanish",
+      "en": "English"
+    },
+    "keyboard": "Keyboard",
+    "keyboardLayout": "Keyboard layout",
+    "keyboardLayoutHint": "Used to draw the keys you miss the most.",
+    "layouts": {
+      "es-ES": "Spanish (Spain)",
+      "es-LA": "Spanish (Latin America)",
+      "en-US": "English (US)"
+    },
+    "bots": "Bots",
+    "botLevel": "Default difficulty",
+    "botLevels": {
+      "beginner": "Beginner (25–35 wpm)",
+      "intermediate": "Intermediate (45–60 wpm)",
+      "advanced": "Advanced (70–90 wpm)",
+      "expert": "Expert (100–120 wpm)",
+      "legend": "Legend (130–160 wpm)"
+    }
+  },
+  "upcoming": {
+    "title": "Not available yet",
+    "practiceCta": "Go practice"
+  },
+  "race": {
+    "title": "Races",
+    "description": "Race against bots or other people on a track where your type block is the runner."
+  },
+  "room": {
+    "title": "Room {code}",
+    "description": "Private rooms let you pick the language, text, bots and player count, and ask for a rematch without leaving."
+  },
+  "leaderboards": {
+    "title": "Leaderboards",
+    "description": "The best validated results of the day, the week and all time, by language and mode."
+  },
+  "profile": {
+    "title": "{nickname}'s profile",
+    "description": "Your wpm over time, race history, weak-key map, achievements and replays."
+  },
+  "auth": {
+    "loginTitle": "Log in",
+    "registerTitle": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters.",
+    "nickname": "Nickname",
+    "nicknameHint": "3 to 20 letters, numbers, hyphens or underscores.",
+    "loginSubmit": "Log in",
+    "registerSubmit": "Create account",
+    "unavailable": "Accounts aren't active yet. You can play everything without one.",
+    "noAccount": "Don't have an account?",
+    "toRegister": "Create one",
+    "haveAccount": "Already have an account?",
+    "toLogin": "Log in"
+  },
+  "notFound": {
+    "title": "This page doesn't exist",
+    "description": "Check the address or go back home.",
+    "cta": "Back to home"
+  }
+}

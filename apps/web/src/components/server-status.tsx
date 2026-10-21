@@ -2,14 +2,17 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { healthResponseSchema } from '@tecleo/shared';
+import { useTranslations } from 'next-intl';
 
 import { fetchApi } from '@/lib/api';
+import { cn } from '@/lib/utils';
 
 /**
  * Indica si el server está disponible. En el plan gratuito el server se duerme y tarda
  * en despertar, así que mientras tanto se muestra "conectando…" y se reintenta.
  */
-export function ServerStatus() {
+export function ServerStatus({ className }: { className?: string }) {
+  const t = useTranslations('serverStatus');
   const { data, isError } = useQuery({
     queryKey: ['health'],
     queryFn: () => fetchApi('/health', healthResponseSchema),
@@ -18,19 +21,23 @@ export function ServerStatus() {
     refetchInterval: 60_000,
   });
 
-  let label = 'Conectando al servidor…';
-  let tone = 'bg-amber-400 animate-pulse';
+  let label = t('connecting');
+  let tone = 'bg-primary animate-pulse motion-reduce:animate-none';
   if (data) {
-    label = `Servidor en línea · v${data.version}`;
-    tone = 'bg-emerald-400';
+    label = t('online', { version: data.version });
+    tone = 'bg-[color-mix(in_oklch,var(--foreground),var(--primary)_40%)]';
   } else if (isError) {
-    label = 'Sin conexión con el servidor';
-    tone = 'bg-rose-500';
+    label = t('offline');
+    tone = 'bg-error';
   }
 
   return (
-    <p role="status" aria-live="polite" className="flex items-center gap-2 text-sm text-zinc-400">
-      <span aria-hidden="true" className={`inline-block size-2 rounded-full ${tone}`} />
+    <p
+      role="status"
+      aria-live="polite"
+      className={cn('flex items-center gap-2 text-sm text-muted-foreground', className)}
+    >
+      <span aria-hidden="true" className={`inline-block size-2 shrink-0 rounded-full ${tone}`} />
       {label}
     </p>
   );

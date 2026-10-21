@@ -1,14 +1,21 @@
 import type { Metadata } from 'next';
+import { useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 
+import { PageContainer } from '@/components/layout/page-container';
 import { PracticeScreen } from '@/features/practice/practice-screen';
 
-export const metadata: Metadata = { title: 'Práctica · Tecleo' };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('practice');
+  return { title: t('title') };
+}
 
 export default function PracticePage() {
+  const t = useTranslations('practice');
   return (
-    <main className="mx-auto flex min-h-dvh max-w-4xl flex-col justify-center gap-8 px-6 py-12">
-      <h1 className="sr-only">Práctica</h1>
+    <PageContainer className="max-w-5xl justify-center">
+      <h1 className="sr-only">{t('title')}</h1>
       <PracticeScreen />
-    </main>
+    </PageContainer>
   );
 }

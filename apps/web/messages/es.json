@@ -1,0 +1,259 @@
+{
+  "meta": {
+    "title": "Tecleo",
+    "description": "Carreras de mecanografía en tiempo real contra personas y bots, en español e inglés."
+  },
+  "nav": {
+    "skipToContent": "Saltar al contenido",
+    "primary": "Navegación principal",
+    "home": "Inicio",
+    "practice": "Practicar",
+    "race": "Carreras",
+    "leaderboards": "Rankings",
+    "settings": "Configuración",
+    "login": "Entrar",
+    "openMenu": "Abrir menú",
+    "language": "Idioma de la interfaz",
+    "theme": "Tema"
+  },
+  "footer": {
+    "credits": "Textos de obras de dominio público tomadas de <gutenberg>Project Gutenberg</gutenberg>. Listas de palabras de <frequency>FrequencyWords</frequency> (CC BY-SA 4.0).",
+    "source": "Código fuente"
+  },
+  "serverStatus": {
+    "connecting": "Conectando al servidor…",
+    "online": "Servidor en línea (v{version})",
+    "offline": "Sin conexión con el servidor. La práctica sigue funcionando."
+  },
+  "home": {
+    "tagline": "Escribe textos de verdad, mira tus errores en vivo y compite contra personas o bots.",
+    "playNow": "Jugar ahora",
+    "modesTitle": "Modos de juego",
+    "available": "Disponible",
+    "soon": "Pronto",
+    "modes": {
+      "practice": {
+        "name": "Práctica libre",
+        "description": "Por tiempo, por cantidad de palabras o con un texto completo. Sin cuenta y sin conexión."
+      },
+      "bots": {
+        "name": "Contra bots",
+        "description": "Hasta cinco bots con ritmo humano, de principiante a leyenda."
+      },
+      "public": {
+        "name": "Carrera pública",
+        "description": "Entra a una sala abierta en tu idioma; si faltan personas, completan los bots."
+      },
+      "private": {
+        "name": "Sala privada",
+        "description": "Comparte un código de seis letras y juega con quien quieras."
+      },
+      "ghost": {
+        "name": "Fantasma",
+        "description": "Compite contra la repetición de tu mejor carrera o la de otra persona."
+      },
+      "daily": {
+        "name": "Desafío diario",
+        "description": "El mismo texto para todos durante el día, con su propio ranking."
+      },
+      "targeted": {
+        "name": "Práctica dirigida",
+        "description": "Ejercicios armados con las teclas y pares de letras donde más fallas."
+      }
+    }
+  },
+  "practice": {
+    "title": "Práctica",
+    "newText": "Nuevo texto",
+    "newTextShortcut": "Tab + Enter",
+    "restartShortcut": "Esc reinicia",
+    "loadError": "No se pudo cargar el texto. Recarga la página para intentarlo de nuevo.",
+    "mobileNotice": "Para escribir con comodidad usa un teclado físico.",
+    "codeSnippet": "Fragmento de código: {title}",
+    "config": {
+      "label": "Opciones de la práctica",
+      "textLanguage": "Idioma del texto",
+      "mode": "Modo",
+      "modes": {
+        "time": "tiempo",
+        "words": "palabras",
+        "text": "texto"
+      },
+      "duration": "Duración",
+      "seconds": "{value} s",
+      "wordCount": "Cantidad de palabras",
+      "kind": "Tipo de texto",
+      "kinds": {
+        "quote": "cita",
+        "code": "código"
+      },
+      "length": "Longitud",
+      "lengths": {
+        "any": "cualquiera",
+        "short": "corto",
+        "medium": "medio",
+        "long": "largo"
+      },
+      "listSize": "Palabras más frecuentes",
+      "lists": {
+        "200": "top 200",
+        "1000": "top 1k",
+        "5000": "top 5k"
+      },
+      "punctuation": "puntuación",
+      "numbers": "números",
+      "rules": "Reglas de escritura",
+      "ruleNames": {
+        "free": "libre",
+        "strict": "estricto"
+      },
+      "ignoreAccents": "ignorar tildes"
+    }
+  },
+  "typing": {
+    "inputLabel": "Texto a escribir",
+    "focusOverlay": "Haz clic o presiona una tecla para continuar",
+    "timeLeft": "Tiempo restante",
+    "progress": "Progreso",
+    "wpm": "ppm",
+    "wpmLong": "palabras por minuto",
+    "accuracy": "precisión"
+  },
+  "results": {
+    "title": "Resultados",
+    "wpm": "ppm",
+    "accuracy": "precisión",
+    "raw": "bruto",
+    "consistency": "consistencia",
+    "peak": "pico",
+    "peakHint": "Mejor ventana de 5 segundos",
+    "time": "tiempo",
+    "timeValue": "{seconds} s",
+    "chars": "caracteres",
+    "charsHint": "correctos / errores / sin escribir",
+    "ignoreAccentsNote": "Con «ignorar tildes» el resultado no cuenta para rankings.",
+    "next": "Siguiente texto",
+    "repeat": "Repetir",
+    "chartLabel": "Palabras por minuto en cada segundo",
+    "chartSecond": "Segundo {second}",
+    "chartWpm": "ppm",
+    "chartRaw": "bruto",
+    "chartErrors": "errores"
+  },
+  "settings": {
+    "title": "Configuración",
+    "savedLocally": "Los cambios se guardan en este navegador al instante.",
+    "appearance": "Apariencia",
+    "theme": "Tema",
+    "themes": {
+      "ink": "Tinta",
+      "day": "Día",
+      "graphite": "Grafito",
+      "forest": "Bosque",
+      "plum": "Ciruela",
+      "contrast": "Alto contraste"
+    },
+    "gameFont": "Tipografía del texto",
+    "gameFontSize": "Tamaño del texto",
+    "sizes": {
+      "s": "Pequeño",
+      "m": "Mediano",
+      "l": "Grande",
+      "xl": "Muy grande"
+    },
+    "caretStyle": "Cursor",
+    "carets": {
+      "line": "Línea",
+      "block": "Bloque",
+      "underline": "Subrayado"
+    },
+    "preview": "Así se ve el texto mientras escribes.",
+    "typing": "Escritura",
+    "typingMode": "Reglas en práctica",
+    "typingModeHint": "Las carreras siempre usan reglas estrictas.",
+    "typingModes": {
+      "free": "Libre: el espacio salta de palabra aunque haya errores",
+      "strict": "Estricto: hay que corregir antes de seguir"
+    },
+    "ignoreAccents": "Ignorar tildes",
+    "ignoreAccentsHint": "Acepta «a» por «á» y «n» por «ñ». Los resultados no cuentan para rankings.",
+    "showLiveStats": "Mostrar ppm y precisión mientras escribes",
+    "focusMode": "Modo concentración",
+    "focusModeHint": "Mientras escribes se esconde todo menos el texto.",
+    "sound": "Sonido",
+    "keySound": "Sonido de teclas",
+    "keySounds": {
+      "off": "Sin sonido",
+      "click": "Clic",
+      "soft": "Suave",
+      "typewriter": "Máquina de escribir"
+    },
+    "volume": "Volumen",
+    "testSound": "Probar sonido",
+    "language": "Idioma",
+    "interfaceLanguage": "Idioma de la interfaz",
+    "textLanguage": "Idioma de los textos por defecto",
+    "languages": {
+      "es": "Español",
+      "en": "Inglés"
+    },
+    "keyboard": "Teclado",
+    "keyboardLayout": "Distribución del teclado",
+    "keyboardLayoutHint": "Se usa para dibujar tus teclas con más errores.",
+    "layouts": {
+      "es-ES": "Español (España)",
+      "es-LA": "Español (Latinoamérica)",
+      "en-US": "Inglés (EE. UU.)"
+    },
+    "bots": "Bots",
+    "botLevel": "Dificultad por defecto",
+    "botLevels": {
+      "beginner": "Principiante (25–35 ppm)",
+      "intermediate": "Intermedio (45–60 ppm)",
+      "advanced": "Avanzado (70–90 ppm)",
+      "expert": "Experto (100–120 ppm)",
+      "legend": "Leyenda (130–160 ppm)"
+    }
+  },
+  "upcoming": {
+    "title": "Todavía no está disponible",
+    "practiceCta": "Ir a practicar"
+  },
+  "race": {
+    "title": "Carreras",
+    "description": "Corre contra bots o contra otras personas en una pista con tu tipo de letra como corredor."
+  },
+  "room": {
+    "title": "Sala {code}",
+    "description": "Las salas privadas te dejan elegir idioma, texto, bots y cantidad de jugadores, y pedir revancha sin salir."
+  },
+  "leaderboards": {
+    "title": "Rankings",
+    "description": "Los mejores resultados validados del día, la semana y de siempre, por idioma y modo."
+  },
+  "profile": {
+    "title": "Perfil de {nickname}",
+    "description": "Evolución de tu ppm, historial, mapa de teclas débiles, logros y repeticiones."
+  },
+  "auth": {
+    "loginTitle": "Entrar",
+    "registerTitle": "Crear cuenta",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "passwordHint": "Al menos 8 caracteres.",
+    "nickname": "Apodo",
+    "nicknameHint": "Entre 3 y 20 letras, números, guiones o guiones bajos.",
+    "loginSubmit": "Entrar",
+    "registerSubmit": "Crear cuenta",
+    "unavailable": "Las cuentas todavía no están activas. Puedes jugar todo sin cuenta.",
+    "noAccount": "¿No tienes cuenta?",
+    "toRegister": "Crea una",
+    "haveAccount": "¿Ya tienes cuenta?",
+    "toLogin": "Entra"
+  },
+  "notFound": {
+    "title": "Esta página no existe",
+    "description": "Revisa la dirección o vuelve al inicio.",
+    "cta": "Volver al inicio"
+  }
+}

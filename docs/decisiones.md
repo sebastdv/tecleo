@@ -226,3 +226,71 @@ Encontrado en los E2E. En desarrollo, React monta, desmonta y vuelve a montar lo
 ### La semilla se fija al empezar a cargar
 
 Encontrado por el CI, que es más lento que la máquina local. Si se cambiaba una opción mientras el primer texto todavía cargaba, `configure()` usaba la semilla anterior (0) y el texto de `?seed=` se perdía. Ahora `next()` guarda la semilla en cuanto empieza. `practice-store.test.ts` reproduce la secuencia: falla sin el arreglo y pasa con él.
+
+## Fase 4
+
+### Prisma 7 con el cliente generado en el repo
+
+Prisma 7 genera el cliente TypeScript en `src/generated/prisma` y exige un adaptador (`@prisma/adapter-pg`). Se usa `importFileExtension = "js"` para que funcione con `module: nodenext`. El cliente generado no se versiona: `build`, `lint`, `typecheck` y `test` corren `prisma generate`, que no necesita conexión.
+
+### Refresh tokens opacos y rotativos
+
+- **Access token:** JWT de 15 minutos que vive solo en memoria del cliente, nunca en `localStorage`.
+- **Refresh token:** 256 bits aleatorios en una cookie httpOnly. En la base solo se guarda su SHA-256.
+- **Rotación:** cada refresh rota el token. Si llega un token ya rotado, alguien lo copió, y se revoca toda la familia.
+- **Carreras entre pestañas:** se resuelven con una actualización condicional, de modo que solo una petición rota el token.
+- **Login:** compara siempre contra un hash argon2, también si el correo no existe. Así el tiempo de respuesta no delata qué cuentas existen.
+
+### Cookie de primera parte vía `/api`
+
+La cookie usa `Path=/api/auth` y `SameSite=Lax`, y es `Secure` en producción. La web llama a la API por su propio dominio (rewrite de Next), así que la cookie nunca es de terceros.
+
+### El servidor recalcula todo
+
+El cliente envía pulsaciones compactas: diferencias de tiempo y caracteres. El servidor:
+
+1. Verifica que el texto coincida con el del corpus cuando hay `textId`.
+2. Juega el registro con el motor respetando reglas y límite de tiempo.
+3. Exige que la prueba termine.
+4. Calcula las métricas.
+5. Aplica el antitrampa.
+6. En carreras contra bots, regenera los bots con la semilla y decide las posiciones.
+
+Las pulsaciones se guardan comprimidas con gzip, unos 1–3 KB por resultado. Los bots no las guardan: se regeneran.
+
+### Antitrampa inicial
+
+Un resultado se marca si:
+
+- pasa de 250 ppm netos;
+- su mejor ventana de 5 s pasa de 320 ppm;
+- la variación entre teclas está por debajo de 0,12 con al menos 30 intervalos.
+
+Un resultado marcado se guarda, no cuenta para rankings y no alimenta las teclas débiles. Los bots, con variación de más de 0,25, nunca se marcan (hay un test que lo verifica).
+
+### Migración del invitado
+
+Los resultados del invitado (los últimos 50) se guardan en `localStorage` con el mismo formato que se envía al servidor. Al registrarse, una casilla marcada por defecto los manda a `/results/import`. El servidor valida cada uno igual que uno nuevo, descarta los inválidos y acota la fecha a los últimos 30 días.
+
+### Preferencias con sesión
+
+Al entrar, las preferencias de la cuenta reemplazan a las locales. Si la cuenta no tiene preferencias, se suben las locales. Después, cada cambio se guarda en el servidor 0,8 s después del último.
+
+### Rate limiting configurable
+
+Los valores por defecto son los de producción: 120 peticiones por minuto en general, 10 en registro y login, y 30 en refresh. En desarrollo y E2E todo sale de localhost y se suben por entorno.
+
+Esto se encontró al repetir los E2E con 5 workers: un 429 en el refresh cerraba la sesión en pantalla. Ahora el cliente solo considera la sesión inválida ante un 401, y reintenta ante límites, caídas o falta de red.
+
+### Mapa de calor por tecla física
+
+Las estadísticas se guardan por carácter esperado. La web las agrupa por tecla según la distribución elegida:
+
+- mayúsculas y tildes van a su tecla base;
+- los signos con Shift van a la tecla que los produce en cada distribución.
+
+El tinte se limita al 45 % para que la letra siga leyéndose en todos los temas.
+
+### Formularios que no filtran credenciales
+
+El formulario de acceso usa `method="post"` y deja el botón deshabilitado hasta hidratar. Así un envío nativo, antes de que cargue el JavaScript, nunca pone el correo y la contraseña en la URL.

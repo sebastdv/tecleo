@@ -2,7 +2,7 @@
 
 Carreras de mecanografía en tiempo real contra otras personas o contra bots. Aparece un texto, lo escribes y ves en vivo lo correcto, lo incorrecto y lo pendiente mientras tu corredor avanza en la pista junto a los demás.
 
-> Estado: **Fase 3**. Se puede practicar y correr contra hasta cinco bots sin cuenta ni servidor, en español o inglés, con seis temas y la configuración guardada en el navegador. Ver el estado de cada fase en [`CLAUDE.md`](CLAUDE.md).
+> Estado: **Fase 4**. Se puede practicar y correr contra hasta cinco bots sin cuenta; con cuenta, los resultados se validan en el servidor y el perfil muestra evolución, historial y teclas débiles. Ver el estado de cada fase en [`CLAUDE.md`](CLAUDE.md).
 
 ## Correr en local
 
@@ -11,6 +11,9 @@ Requisitos: Node 24, pnpm 10 (`corepack enable`), Docker.
 ```bash
 pnpm install
 pnpm db:up
+cp .env.example apps/server/.env            # y ajusta lo que quieras
+pnpm --filter @tecleo/server db:deploy      # crea las tablas
+pnpm --filter @tecleo/server db:seed        # carga los 335 textos
 pnpm dev
 ```
 

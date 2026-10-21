@@ -24,7 +24,7 @@ Los puertos 3100/4100/5440 evitan choques con otros proyectos locales (3000 y 54
 
 ```
 apps/web               Next.js 16 (App Router, Cache Components) + Tailwind 4 + TanStack Query
-apps/server            NestJS 12 (ESM) + Swagger; Socket.IO y Prisma llegan en las fases 4-5
+apps/server            NestJS 12 (ESM) + Prisma 7 (Postgres) + Swagger; Socket.IO llega en la Fase 5
 packages/engine        @tecleo/engine — motor de escritura, métricas, bots. TS puro: sin DOM ni Node
 packages/shared        @tecleo/shared — esquemas Zod, contratos de eventos y DTOs
 packages/content       @tecleo/content — corpus de dominio público, listas de palabras, código, generadores
@@ -41,6 +41,15 @@ e2e                    @tecleo/e2e — Playwright
 - `bots/`: modelo de bots (`simulateBot`) que precalcula el registro de pulsaciones con la semilla de la carrera. El ritmo tiene ruido log-normal, pausas tras puntuación, ráfagas en palabras cortas, errores que se corrigen y fatiga o sprint. Al final se escala para que el ppm neto sea el objetivo del nivel. `rankRunners` ordena la llegada (también para el servidor).
 - `typing/input-events.ts`: traduce `beforeinput`/`compositionend` a acciones. La web solo conecta eventos (`apps/web/src/features/typing/use-typing-input.ts`).
 
+### Server
+
+- Prisma 7: esquema en `apps/server/prisma/schema.prisma`; el cliente se genera en `src/generated/prisma` (ignorado por git; `build`, `lint`, `typecheck` y `test` corren `prisma generate`). Conexión con `@prisma/adapter-pg`. `prisma.config.ts` carga `.env`.
+- Auth (`src/auth`): argon2id, access token JWT HS256 de 15 min (en memoria del cliente), refresh token opaco en cookie httpOnly `tecleo_refresh` (Path `/api/auth`, SameSite Lax). Sesiones rotativas por familia: reusar un token rotado revoca la familia.
+- Resultados (`src/results`): el cliente envía pulsaciones codificadas; el servidor las juega con `playKeystrokes` del motor, verifica el texto del corpus, regenera los bots desde la semilla, aplica `inspectRun` (antitrampa) y guarda Race + RaceResult (+ bots) + KeyStat en una transacción.
+- Errores: siempre `{ statusCode, code, message, fields? }` (`apiErrorSchema`); validación con `ZodValidationPipe` y esquemas de `@tecleo/shared`.
+- Rate limiting: global `RATE_LIMIT`/min por IP; registro y login `AUTH_RATE_LIMIT`/min (refresh, el triple).
+- Tests de integración en `test/*.e2e-spec.ts` contra `tecleo_test` (las migraciones se aplican solas en `globalSetup`).
+
 ### Web
 
 - Rutas en `src/app/[locale]/…` (`/es`, `/en`); el layout raíz es `app/[locale]/layout.tsx` y lee el idioma con `next/root-params`. `src/proxy.ts` (antes "middleware") redirige las rutas sin idioma. Mensajes en `messages/{es,en}.json` (mismas claves, lo verifica un test).
@@ -51,7 +60,11 @@ e2e                    @tecleo/e2e — Playwright
 - `features/practice`: store (`practice-store.ts`, opciones persistidas) y generación de textos. `?seed=N` reproduce un texto. Idioma del texto y reglas viven en las preferencias.
 - `features/race`: carrera local contra 1–5 bots (`race-store.ts`). La carrera tiene cuenta regresiva de 3 s, es siempre estricta y tiene un límite de tiempo equivalente a 12 ppm. La pista (`track.tsx`) mueve a los bots con `requestAnimationFrame` interpolando su progreso; además hay podio y confeti si ganas. `?seed=N` fija texto y bots.
 - `features/results`: panel y gráfica (Recharts con colores de los tokens del tema activo).
-- Pantallas que dependen de fases futuras (salas, rankings, perfil) usan `components/upcoming.tsx`: explican qué harán y llevan a la práctica, sin datos simulados. Entrar/registrarse muestran el formulario con el envío deshabilitado y un aviso.
+- Sesión (`src/auth`, `lib/api.ts`): `fetchApi` adjunta el access token y, ante un 401, renueva una vez (refresh compartido entre peticiones) y reintenta. Solo un 401 del refresh cierra la sesión.
+- Preferencias con sesión: `settings/settings-sync.tsx` (las de la cuenta mandan al entrar; cada cambio se guarda).
+- Resultados: `results/save-result.ts` los envía al servidor con sesión o los guarda como invitado en `localStorage` (máx. 50) para migrarlos al registrarse.
+- Perfil (`features/profile`): cifras, evolución, mejores marcas, mapa de calor sobre el teclado (`keyboard-layouts.ts`, es-ES/es-LA/en-US), pares problemáticos e historial paginado.
+- Pantallas que dependen de fases futuras (salas, rankings) usan `components/upcoming.tsx`: explican qué harán y llevan a la práctica, sin datos simulados.
 - Atajos: en práctica, Esc reinicia el intento; en carrera, Esc sale. Tab lleva a "Nuevo texto" y Enter lo activa.
 
 ## Convenciones
@@ -62,7 +75,7 @@ e2e                    @tecleo/e2e — Playwright
 - Identificadores en inglés; comentarios y docs en español. Todo texto de interfaz va en `messages/*.json` (nunca literal en el JSX).
 - Colores solo con tokens (`bg-background`, `text-primary`, `text-pending`, `text-error`…), nunca con la paleta de Tailwind.
 - Tests con Vitest junto al código (`*.test.ts` en paquetes y web, `*.spec.ts` en server, `test/*.e2e-spec.ts` para integración HTTP). El motor exige cobertura ≥ 95 % de líneas.
-- E2E en `e2e/tests`: localizar por rol y texto accesible; `[data-typing-target]` (solo lectores de pantalla) contiene el texto completo a escribir. `site.spec.ts` pasa axe (WCAG 2.1 AA) por todas las pantallas.
+- E2E en `e2e/tests`: localizar por rol y texto accesible; `[data-typing-target]` (solo lectores de pantalla) contiene el texto completo a escribir. `site.spec.ts` pasa axe (WCAG 2.1 AA) por todas las pantallas. Necesitan server y Postgres (Playwright levanta ambos; en local reutiliza `pnpm dev`). Con Cache Components, Next conserva ocultas las páginas visitadas: usar `getByRole` o filtrar `visible: true`.
 - Validación de entradas siempre con esquemas Zod de `shared`.
 - Prettier: comillas simples, `;`, ancho 100. ESLint con reglas type-checked estrictas.
 - Commits: Conventional Commits en español, `tipo(scope): descripción`, un solo `-m`.
@@ -70,21 +83,21 @@ e2e                    @tecleo/e2e — Playwright
 
 ## Estado de las fases
 
-| Fase                      | Estado       | Notas                                                                                                                                |
-| ------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| 0 – Base                  | ✅ completa  | Monorepo, tooling, CI, docker-compose, `/health` + indicador "conectando al servidor…"                                               |
-| 1 – Motor y práctica solo | ✅ completa  | Motor + 69 tests (97 % cobertura), corpus 160 textos/idioma, práctica tiempo/palabras/texto, resultados con gráfica                  |
-| 2 – Diseño                | ✅ completa  | 6 temas con contraste AA verificado, tipografías configurables, i18n es/en, configuración local, todas las pantallas, 34 E2E con axe |
-| 3 – Bots locales          | ✅ completa  | Bots en el motor (93 tests del motor; rango de ppm por nivel verificado), pista, cuenta regresiva, podio, 39 E2E                     |
-| 4 – Backend y cuentas     | ⏳ siguiente |                                                                                                                                      |
-| 5 – Multijugador          | pendiente    |                                                                                                                                      |
-| 6 – Contenido extra       | pendiente    |                                                                                                                                      |
-| 7 – Pulido y despliegue   | pendiente    |                                                                                                                                      |
+| Fase                      | Estado       | Notas                                                                                                                                                              |
+| ------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0 – Base                  | ✅ completa  | Monorepo, tooling, CI, docker-compose, `/health` + indicador "conectando al servidor…"                                                                             |
+| 1 – Motor y práctica solo | ✅ completa  | Motor + 69 tests (97 % cobertura), corpus 160 textos/idioma, práctica tiempo/palabras/texto, resultados con gráfica                                                |
+| 2 – Diseño                | ✅ completa  | 6 temas con contraste AA verificado, tipografías configurables, i18n es/en, configuración local, todas las pantallas, 34 E2E con axe                               |
+| 3 – Bots locales          | ✅ completa  | Bots en el motor (93 tests del motor; rango de ppm por nivel verificado), pista, cuenta regresiva, podio, 39 E2E                                                   |
+| 4 – Backend y cuentas     | ✅ completa  | Prisma + auth con refresh rotativo, resultados validados por el motor, perfil con gráficas y mapa de calor, migración de invitado; 26 tests de integración, 46 E2E |
+| 5 – Multijugador          | ⏳ siguiente |                                                                                                                                                                    |
+| 6 – Contenido extra       | pendiente    |                                                                                                                                                                    |
+| 7 – Pulido y despliegue   | pendiente    |                                                                                                                                                                    |
 
 ### Pendiente explícito
 
 - Teclas muertas con teclado físico: el camino de composición está cubierto con eventos sintéticos (unit + E2E), falta confirmarlo a mano en macOS/Windows con distribución española y latinoamericana.
 - "Jugar ahora" lleva a la carrera contra bots hasta que exista el matchmaking (Fase 5).
-- Fase 4: cuentas reales (los formularios de entrar/registrarse tienen el envío deshabilitado), sincronizar preferencias con `/me/settings`, guardar resultados del invitado en `localStorage` para migrarlos al registrarse, seed del corpus en la base de datos, job de CI con Postgres.
-- La preferencia "distribución del teclado" se guarda pero se usa recién con el mapa de calor (Fase 4).
-- Los resultados de las carreras contra bots no se guardan todavía (Fase 4).
+- OAuth con Google (opcional en la spec): no implementado; requiere credenciales para probarlo.
+- Calificar textos 👍/👎, panel de administración de textos, XP/niveles y logros: Fase 6 (los campos existen en la base).
+- El antitrampa por ahora revisa ppm implausible e intervalos uniformes; la validación de progreso en vivo llega con el multijugador (Fase 5).

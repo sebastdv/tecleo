@@ -222,3 +222,7 @@ Los bots se mueven con `requestAnimationFrame` y escriben la variable CSS `--p` 
 ### Stores persistidos que no pisan lo guardado
 
 Encontrado en los E2E. En desarrollo, React monta, desmonta y vuelve a montar los efectos. La limpieza de la carrera hacía `set()` antes de la rehidratación, y `persist` escribía la configuración por defecto encima de la guardada. `readFirstStorage()` descarta las escrituras hasta la primera lectura, y lo usan los tres stores persistidos.
+
+### La semilla se fija al empezar a cargar
+
+Encontrado por el CI, que es más lento que la máquina local. Si se cambiaba una opción mientras el primer texto todavía cargaba, `configure()` usaba la semilla anterior (0) y el texto de `?seed=` se perdía. Ahora `next()` guarda la semilla en cuanto empieza. `practice-store.test.ts` reproduce la secuencia: falla sin el arreglo y pasa con él.

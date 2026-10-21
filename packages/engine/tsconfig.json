@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    // El motor corre igual en navegador y en Node: sin tipos de DOM ni de Node.
+    "lib": ["ES2023"],
+    "types": []
+  },
+  "include": ["src", "*.config.ts"]
+}

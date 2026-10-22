@@ -197,6 +197,12 @@ describe('RoomsService', () => {
       expect(results.saved.get(ana.id)).toBe(`result-${ana.id}`);
       expect(results.saved.has(beto.id)).toBe(false);
       expect(rooms.toState(room).players.find((p) => p.id === ana.id)?.position).toBe(1);
+      // Quien vuelve a la sala terminada recibe los mismos resultados con su id guardado.
+      expect(rooms.resultsFor(room, ana.id)).toEqual({
+        standings: results.standings,
+        savedResultId: `result-${ana.id}`,
+      });
+      expect(rooms.resultsFor(room, beto.id)?.savedResultId).toBeNull();
     });
 
     it('marca una llegada que dice haber terminado antes de lo que lleva la carrera', async () => {

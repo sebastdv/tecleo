@@ -307,6 +307,9 @@ export class RealtimeGateway
     }
     await socket.join(channel(room.code));
     socket.emit(EVENTS.roomState, this.rooms.toState(room));
+    const { identity } = socket.data as SocketData;
+    const results = this.rooms.resultsFor(room, identity.id);
+    if (results) socket.emit(EVENTS.raceResults, results);
   }
 
   private dispatch(event: RoomEvent): void {

@@ -112,6 +112,8 @@ export class RoomsService {
   private listener: (event: RoomEvent) => void = () => undefined;
   /** Clasificación de las carreras terminadas, para el estado de la sala. */
   private readonly standings = new WeakMap<Room, RaceResults['standings']>();
+  /** Ids de los resultados guardados por jugador, una vez que la base respondió. */
+  private readonly saved = new WeakMap<Room, ReadonlyMap<string, string>>();
 
   constructor(
     private readonly store: RoomStore,
@@ -300,6 +302,7 @@ export class RoomsService {
       });
     }
     this.standings.delete(room);
+    this.saved.delete(room);
     this.emit({ type: 'state', room });
   }
 
@@ -451,6 +454,14 @@ export class RoomsService {
               timeLimitMs: room.timeLimitMs,
             },
     };
+  }
+
+  /** Resultados ya emitidos de la última carrera, para quien vuelve a una sala terminada. */
+  resultsFor(room: Room, playerId: string): RaceResults | null {
+    const standings = this.standings.get(room);
+    const saved = this.saved.get(room);
+    if (room.phase !== 'finished' || !standings || !saved) return null;
+    return { standings, savedResultId: saved.get(playerId) ?? null };
   }
 
   progressSnapshot(room: Room): { id: string; progress: number; wpm: number }[] {
@@ -622,6 +633,7 @@ export class RoomsService {
         return new Map<string, string>();
       })
       .then((saved) => {
+        this.saved.set(room, saved);
         this.emit({ type: 'results', room, standings, saved });
       })
       .catch(() => undefined);

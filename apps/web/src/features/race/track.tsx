@@ -1,29 +1,35 @@
 'use client';
 
-import {
-  botWpmAt,
-  correctChars,
-  liveMetrics,
-  totalChars,
-  type BotRun,
-  type TypingState,
-} from '@tecleo/engine';
 import { Bot, Flag } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, type CSSProperties } from 'react';
 
 import { cn } from '@/lib/utils';
 
-import { useNow } from '../typing/use-now';
-import { interpolatedProgress } from './progress';
+/** Un carril de la pista. */
+export interface TrackLane {
+  readonly id: string;
+  readonly name: string;
+  readonly isBot: boolean;
+  /** Quien juega en esta pantalla: resaltado y movido por sus propias pulsaciones. */
+  readonly self: boolean;
+  /** Progreso actual (0–1), para lectores de pantalla y para los carriles no animados. */
+  readonly progress: number;
+  readonly wpm: number;
+  /** Puesto, cuando ya llegó. */
+  readonly position?: number | undefined;
+  /** Se mueve cuadro a cuadro con `progressAt` en vez de con `progress`. */
+  readonly animated?: boolean;
+  /** Aclaración junto al nombre (p. ej. "desconectado"). */
+  readonly note?: string | undefined;
+}
 
 interface TrackProps {
-  readonly typing: TypingState;
-  readonly bots: readonly BotRun[];
-  /** Instante de la salida (`performance.now()`); `null` antes de la cuenta regresiva. */
-  readonly startAt: number | null;
-  /** Puesto final de cada corredor, cuando ya llegó. */
-  readonly positions?: ReadonlyMap<string, number>;
+  readonly lanes: readonly TrackLane[];
+  /** Progreso de un carril animado en un instante de `performance.now()`. */
+  readonly progressAt?: (id: string, now: number) => number;
+  /** Mientras sea verdadero, los carriles animados se redibujan en cada cuadro. */
+  readonly animating: boolean;
 }
 
 const RUNNER_SIZE = '2.25rem';
@@ -51,6 +57,7 @@ function Lane({
   wpm,
   progress,
   position,
+  note,
   laneRef,
   style,
   highlight,
@@ -60,8 +67,9 @@ function Lane({
   wpm: number;
   progress: number;
   position: number | undefined;
+  note: string | undefined;
   laneRef?: (element: HTMLDivElement | null) => void;
-  style?: CSSProperties;
+  style?: CSSProperties | undefined;
   highlight: boolean;
 }) {
   const t = useTranslations('race');
@@ -73,14 +81,15 @@ function Lane({
         {isBot && <Bot aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />}
         <span className="truncate">{name}</span>
         {isBot && <span className="sr-only">{t('botLabel')}</span>}
+        {note && <span className="shrink-0 text-xs text-muted-foreground">{note}</span>}
       </span>
       <div
         ref={laneRef}
         style={style}
         className={cn(
           'relative h-11 border-b border-dashed border-border',
-          // El jugador salta de carácter en carácter: una transición corta lo suaviza.
-          // Los bots ya se interpolan cuadro a cuadro.
+          // Quien juega salta de carácter en carácter: una transición corta lo suaviza.
+          // Los demás ya se interpolan cuadro a cuadro.
           highlight && 'motion-safe:[&>span]:transition-[left] motion-safe:[&>span]:duration-100',
         )}
       >
@@ -103,43 +112,29 @@ function Lane({
 }
 
 /**
- * Pista de la carrera. Los bots se mueven con requestAnimationFrame interpolando su progreso
- * (sin re-renderizar React); el jugador avanza con cada pulsación.
+ * Pista de la carrera. Los carriles animados (bots y rivales) se mueven con
+ * requestAnimationFrame escribiendo una variable CSS, sin re-renderizar React; el propio avanza
+ * con cada pulsación.
  */
-export function Track({ typing, bots, startAt, positions }: TrackProps) {
+export function Track({ lanes, progressAt, animating }: TrackProps) {
   const t = useTranslations('race');
   const laneRefs = useRef(new Map<string, HTMLDivElement>());
-  const racing = startAt !== null && typing.phase !== 'idle';
-  const now = useNow(250, racing);
-  const elapsed = startAt === null ? 0 : Math.max(0, now - startAt);
 
   useEffect(() => {
-    if (startAt === null) return;
+    if (!animating || !progressAt) return;
     let frame = 0;
-    const lastFinish = Math.max(0, ...bots.map((bot) => bot.finishMs));
     const draw = () => {
-      const t = Math.max(0, performance.now() - startAt);
-      for (const bot of bots) {
-        laneRefs.current
-          .get(bot.profile.id)
-          ?.style.setProperty('--p', String(interpolatedProgress(bot, t)));
+      const now = performance.now();
+      for (const [id, element] of laneRefs.current) {
+        element.style.setProperty('--p', String(Math.max(0, Math.min(1, progressAt(id, now)))));
       }
-      if (t <= lastFinish) frame = requestAnimationFrame(draw);
+      frame = requestAnimationFrame(draw);
     };
     frame = requestAnimationFrame(draw);
     return () => {
       cancelAnimationFrame(frame);
     };
-  }, [bots, startAt]);
-
-  // Quien ya llegó tiene su puesto asegurado: nadie que siga en carrera puede superarlo.
-  const provisionalPosition = (bot: BotRun) =>
-    1 + bots.filter((other) => other.finishMs < bot.finishMs).length;
-  const playerProgress = correctChars(typing) / Math.max(1, totalChars(typing));
-  const playerWpm = liveMetrics(
-    typing,
-    typing.phase === 'running' ? now : (typing.finishedAt ?? now),
-  ).wpm;
+  }, [animating, progressAt]);
 
   return (
     <section aria-labelledby="track-title" className="flex flex-col gap-1">
@@ -148,32 +143,28 @@ export function Track({ typing, bots, startAt, positions }: TrackProps) {
         {t('track')}
       </h2>
       <ol className="flex flex-col">
-        <Lane
-          name={t('you')}
-          isBot={false}
-          wpm={playerWpm}
-          progress={playerProgress}
-          position={positions?.get('player')}
-          style={{ '--p': playerProgress } as CSSProperties}
-          highlight
-        />
-        {bots.map((bot) => (
+        {lanes.map((lane) => (
           <Lane
-            key={bot.profile.id}
-            name={bot.profile.name}
-            isBot
-            wpm={botWpmAt(bot, elapsed)}
-            progress={Math.min(1, interpolatedProgress(bot, elapsed))}
-            position={
-              elapsed >= bot.finishMs
-                ? (positions?.get(bot.profile.id) ?? provisionalPosition(bot))
-                : undefined
-            }
-            laneRef={(element) => {
-              if (element) laneRefs.current.set(bot.profile.id, element);
-              else laneRefs.current.delete(bot.profile.id);
-            }}
-            highlight={false}
+            key={lane.id}
+            name={lane.name}
+            isBot={lane.isBot}
+            wpm={lane.wpm}
+            progress={Math.min(1, lane.progress)}
+            position={lane.position}
+            note={lane.note}
+            highlight={lane.self}
+            {...(lane.animated
+              ? {
+                  laneRef: (element: HTMLDivElement | null) => {
+                    if (element) {
+                      laneRefs.current.set(lane.id, element);
+                      // Solo la primera vez: después manda el cuadro a cuadro.
+                      if (!element.style.getPropertyValue('--p'))
+                        element.style.setProperty('--p', String(Math.min(1, lane.progress)));
+                    } else laneRefs.current.delete(lane.id);
+                  },
+                }
+              : { style: { '--p': Math.min(1, lane.progress) } as CSSProperties })}
           />
         ))}
       </ol>

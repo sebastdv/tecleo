@@ -6,7 +6,16 @@ import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils';
 
-import type { RunnerOutcome } from './race-store';
+/** Un corredor en la clasificación final (carrera local o en línea). */
+export interface PodiumEntry {
+  readonly id: string;
+  readonly name: string;
+  readonly isBot: boolean;
+  readonly position: number;
+  readonly wpm: number;
+  readonly accuracy: number | null;
+  readonly finishMs: number | null;
+}
 
 /** Altura de cada escalón y orden visual: segundo, primero, tercero. */
 const STEPS = [
@@ -15,14 +24,18 @@ const STEPS = [
   { place: 3, height: 'h-14', order: 'order-3' },
 ] as const;
 
-function displayName(outcome: RunnerOutcome, you: string): string {
-  return outcome.isBot ? outcome.name : you;
-}
-
 /** Podio animado: los escalones suben en orden de llegada y la tabla completa va debajo. */
-export function Podium({ outcomes }: { outcomes: readonly RunnerOutcome[] }) {
+export function Podium({
+  outcomes,
+  selfId,
+}: {
+  outcomes: readonly PodiumEntry[];
+  /** Quien juega en esta pantalla: se muestra como "Tú" y resaltado. */
+  selfId: string;
+}) {
   const t = useTranslations('race');
   const reduceMotion = useReducedMotion();
+  const displayName = (outcome: PodiumEntry) => (outcome.id === selfId ? t('you') : outcome.name);
   const podium = outcomes.filter((outcome) => outcome.finishMs !== null).slice(0, 3);
 
   return (
@@ -34,7 +47,7 @@ export function Podium({ outcomes }: { outcomes: readonly RunnerOutcome[] }) {
         {STEPS.map(({ place, height, order }, index) => {
           const outcome = podium[place - 1];
           if (!outcome) return null;
-          const you = !outcome.isBot;
+          const you = outcome.id === selfId;
           return (
             <motion.li
               key={outcome.id}
@@ -55,13 +68,13 @@ export function Podium({ outcomes }: { outcomes: readonly RunnerOutcome[] }) {
                   you ? 'border-primary bg-primary text-primary-foreground' : 'bg-card',
                 )}
               >
-                {displayName(outcome, t('you')).charAt(0).toUpperCase()}
+                {displayName(outcome).charAt(0).toUpperCase()}
               </span>
               <span className={cn('flex items-center gap-1 text-sm', you && 'font-semibold')}>
                 {outcome.isBot && (
                   <Bot aria-hidden="true" className="size-3.5 text-muted-foreground" />
                 )}
-                {displayName(outcome, t('you'))}
+                {displayName(outcome)}
                 {outcome.isBot && <span className="sr-only">{t('botLabel')}</span>}
               </span>
               <span className="tabular text-sm text-muted-foreground">
@@ -105,19 +118,24 @@ export function Podium({ outcomes }: { outcomes: readonly RunnerOutcome[] }) {
         </thead>
         <tbody className="tabular">
           {outcomes.map((outcome) => (
-            <tr key={outcome.id} className={cn('border-b', !outcome.isBot && 'font-semibold')}>
+            <tr
+              key={outcome.id}
+              className={cn('border-b', outcome.id === selfId && 'font-semibold')}
+            >
               <td className="py-2">{t('position', { position: outcome.position })}</td>
               <td className="py-2">
                 <span className="flex items-center gap-1.5">
                   {outcome.isBot && (
                     <Bot aria-hidden="true" className="size-4 text-muted-foreground" />
                   )}
-                  {displayName(outcome, t('you'))}
+                  {displayName(outcome)}
                   {outcome.isBot && <span className="sr-only">{t('botLabel')}</span>}
                 </span>
               </td>
               <td className="py-2 text-right">{Math.round(outcome.wpm)}</td>
-              <td className="py-2 text-right">{Math.round(outcome.accuracy)}%</td>
+              <td className="py-2 text-right">
+                {outcome.accuracy === null ? '—' : `${String(Math.round(outcome.accuracy))}%`}
+              </td>
               <td className="py-2 text-right">
                 {outcome.finishMs === null
                   ? t('dnf')

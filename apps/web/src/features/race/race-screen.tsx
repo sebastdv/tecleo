@@ -20,7 +20,7 @@ import { Countdown } from './countdown';
 import { Podium } from './podium';
 import { PLAYER_ID, useRaceStore } from './race-store';
 import { RaceSetup } from './race-setup';
-import { Track } from './track';
+import { LocalTrack } from './local-track';
 
 const currentTyping = () => useRaceStore.getState().typing;
 
@@ -125,7 +125,7 @@ export function RaceScreen() {
 
   return (
     <div className="flex flex-col gap-10">
-      <Track
+      <LocalTrack
         typing={typing}
         bots={bots}
         startAt={startAt}
@@ -140,7 +140,7 @@ export function RaceScreen() {
               ? t('timeUp')
               : t('yourPlace', { position: player.position, total: outcomes.length })}
           </p>
-          <Podium outcomes={outcomes} />
+          <Podium outcomes={outcomes} selfId={PLAYER_ID} />
           <ResultsPanel
             metrics={metrics}
             attribution={
@@ -166,12 +166,12 @@ export function RaceScreen() {
         <div className="flex flex-col gap-6">
           <div className="relative">
             <TypingArea
-              key={round}
+              key={`typing-${String(round)}`}
               state={typing}
               onAction={onAction}
               caretStyle={settings.caretStyle}
             />
-            {startAt !== null && <Countdown key={round} startAt={startAt} />}
+            {startAt !== null && <Countdown key={`countdown-${String(round)}`} startAt={startAt} />}
           </div>
           <div data-chrome className="flex flex-wrap items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">

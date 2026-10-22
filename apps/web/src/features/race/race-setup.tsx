@@ -9,7 +9,8 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 import { BOT_COUNTS, useRaceStore, type BotLevelChoice, type RaceConfig } from './race-store';
 
-function Option({
+/** Una opción con su etiqueta (para grupos de botones) y una pista opcional debajo. */
+export function SetupOption({
   label,
   hint,
   children,
@@ -40,7 +41,7 @@ export function RaceSetup({ loading }: { loading: boolean }) {
 
   return (
     <section aria-label={t('setupLabel')} className="flex max-w-3xl flex-col gap-8">
-      <Option label={t('botCount')}>
+      <SetupOption label={t('botCount')}>
         {(labelId) => (
           <ToggleGroup
             type="single"
@@ -59,9 +60,9 @@ export function RaceSetup({ loading }: { loading: boolean }) {
             ))}
           </ToggleGroup>
         )}
-      </Option>
+      </SetupOption>
 
-      <Option
+      <SetupOption
         label={t('level')}
         hint={config.level === 'mixed' ? t('mixedHint') : tLevels(config.level)}
       >
@@ -83,9 +84,9 @@ export function RaceSetup({ loading }: { loading: boolean }) {
             ))}
           </ToggleGroup>
         )}
-      </Option>
+      </SetupOption>
 
-      <Option label={t('length')}>
+      <SetupOption label={t('length')}>
         {(labelId) => (
           <ToggleGroup
             type="single"
@@ -103,7 +104,7 @@ export function RaceSetup({ loading }: { loading: boolean }) {
             ))}
           </ToggleGroup>
         )}
-      </Option>
+      </SetupOption>
 
       <Button
         size="lg"

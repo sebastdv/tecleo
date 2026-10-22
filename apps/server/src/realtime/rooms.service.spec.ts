@@ -266,6 +266,16 @@ describe('RoomsService', () => {
       expect(room.startAt).toBe(now + TIMINGS.countdownMs);
     });
 
+    it('pedir matchmaking de nuevo (recarga) no saca a nadie de su carrera pública', async () => {
+      const room = await rooms.join(ana, { mode: 'public', language: 'es' });
+      advance(TIMINGS.matchmakingWaitMs);
+      advance(TIMINGS.countdownMs);
+      rooms.disconnect(ana.id);
+      const again = await rooms.join(ana, { mode: 'public', language: 'es' });
+      expect(again.code).toBe(room.code);
+      expect(room.players.get(ana.id)?.connected).toBe(true);
+    });
+
     it('separa por idioma y no mete a nadie en una carrera ya empezada', async () => {
       const es = await rooms.join(ana, { mode: 'public', language: 'es' });
       const en = await rooms.join(beto, { mode: 'public', language: 'en' });

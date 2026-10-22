@@ -143,9 +143,14 @@ export class RoomsService {
 
   async join(identity: Identity, request: z.output<typeof roomJoinSchema>): Promise<Room> {
     const current = this.roomOf(identity.id);
-    if (request.mode === 'private' && current?.code === request.code) {
-      return this.reconnect(identity) ?? current;
-    }
+    // Recargar la página no saca a nadie de su sala: misma sala privada, o una pública en curso.
+    const sameRoom =
+      request.mode === 'private'
+        ? current?.code === request.code
+        : current?.mode === 'public' &&
+          current.phase !== 'finished' &&
+          current.config.language === request.language;
+    if (current && sameRoom) return this.reconnect(identity) ?? current;
     if (current) this.leave(identity.id);
 
     if (request.mode === 'private') {

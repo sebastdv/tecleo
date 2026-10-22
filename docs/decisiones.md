@@ -300,3 +300,71 @@ El formulario de acceso usa `method="post"` y deja el botón deshabilitado hasta
 Turbo 2 corre las tareas en modo estricto: solo les llegan las variables declaradas. `DATABASE_URL_TEST` no llegaba a los tests del server en CI, que intentaban la base local por defecto y fallaban. En local pasaban, porque esa base existe. Ahora está en `passThroughEnv` de la tarea `test`.
 
 Se comprobó en un clon limpio con una URL inalcanzable: sin el cambio, los tests la ignoraban; con el cambio, fallan como corresponde. Toda variable nueva que necesite una tarea de Turbo tiene que declararse en `turbo.json`.
+
+## Fase 5
+
+### Salas en memoria detrás de una interfaz
+
+Las salas viven en memoria del proceso (`InMemoryRoomStore`), detrás de la clase abstracta `RoomStore`. Con un solo servidor alcanza y no cuesta nada. Para escalar a varias instancias habría que cambiar el store por uno compartido (Redis) y usar el adaptador de Redis de Socket.IO; la lógica de `RoomsService` no cambia.
+
+Una caída del servidor pierde las carreras en curso. Los resultados ya guardados no se pierden: se escriben en Postgres al cerrar cada carrera.
+
+### Identidad en el handshake
+
+El socket se identifica una sola vez, en un middleware, antes de aceptar la conexión:
+
+- con cuenta, con el access token;
+- sin cuenta, con un `guestId` (UUID guardado en `localStorage`) y un nombre opcional.
+
+Así, recargar o reconectar devuelve a la misma persona a su sala. Si el token está por vencer, el cliente lo renueva antes de reconectar: con uno vencido el servidor la tomaría por invitada y la sacaría de la carrera.
+
+El socket va directo al server (`NEXT_PUBLIC_SOCKET_URL`), no por el proxy de Next. No necesita cookies.
+
+### El servidor decide, el cliente anima
+
+- La salida, el límite de tiempo, los bots (semilla y niveles) y el orden de llegada los decide el servidor.
+- El cliente regenera los bots con el motor a partir de la semilla, igual que en la carrera local. Así no viaja su progreso por la red.
+- El progreso propio se envía cada ~120 ms. El servidor reparte las posiciones de todos cada 150 ms.
+- Los rivales se dibujan 250 ms por detrás de lo recibido, interpolando entre dos envíos. Nunca se extrapola: un rival no aparece más adelante de lo que dijo el servidor.
+
+### Reloj sincronizado
+
+Al conectar, el cliente hace 5 pings y se queda con el de menor ida y vuelta (estilo NTP) para estimar el desfase. Las horas del servidor (salida, fin de la espera) se convierten al reloj de `performance.now()` de la página. Así la cuenta regresiva termina a la vez en todos los navegadores.
+
+### Validación de la llegada
+
+Al terminar, el cliente manda las pulsaciones. El servidor las reproduce con `playKeystrokes` sobre el texto de la sala y exige que completen el texto. Además marca el resultado (no lo rechaza) si:
+
+- `inspectRun` encuentra ppm implausible o intervalos uniformes;
+- dice haber tardado menos de lo que lleva la carrera en el reloj del servidor (con 2 s de margen);
+- el progreso en vivo fue imposible para el tiempo transcurrido (más de 300 ppm).
+
+El progreso que retrocede más de 30 caracteres se ignora. Las carreras en línea son siempre estrictas y sin «ignorar tildes»: todos con las mismas reglas.
+
+### Reconexión
+
+El servidor guarda el lugar 30 s. Lo escrito se guarda en `sessionStorage` por carrera; al volver (recarga o corte), se reproduce sobre la salida original y se sigue escribiendo. Si la sala ya terminó, el servidor reenvía los resultados a quien vuelve.
+
+Pedir matchmaking de nuevo (recargar `/play`) devuelve a la carrera pública en curso, en vez de buscar otra.
+
+### Matchmaking público
+
+- Entra a una sala pública abierta del mismo idioma (el de los textos en Configuración), o crea una.
+- La espera dura 10 s. Al terminar, la carrera se completa con bots hasta 5 corredores (de principiante a experto).
+- Si llega alguien durante la cuenta regresiva, ocupa el lugar de un bot y la cuenta se reinicia (spec 7.1).
+- Con 5 personas arranca sin esperar.
+
+### Sala privada
+
+- El código usa 6 caracteres sin los que se confunden (0/O, 1/I/L).
+- La sala arranca cuando todas las personas conectadas están listas, o cuando el anfitrión pulsa «Empezar ya». Esto permite correr solo contra bots en una sala.
+- Si el anfitrión se va, el anfitrión pasa a otra persona.
+- La revancha conserva sala y jugadores, cambia el texto y vuelve a pedir «listo».
+
+### Resultados en línea de invitados
+
+Con cuenta, el resultado se guarda en el perfil igual que el de una carrera local. Sin cuenta no se guarda: el historial local de invitado solo recibe pruebas que el servidor puede revalidar enteras al importarlas, y una carrera en línea depende de la sala. La pantalla lo dice y ofrece crear una cuenta.
+
+### Nombre de invitado
+
+Se elige en la pantalla de salas privadas y se recuerda en el navegador. En la carrera pública se usa el guardado, o uno al azar («Invitado XXXX»).

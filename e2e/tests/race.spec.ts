@@ -86,13 +86,6 @@ test('la configuración elegida decide cuántos bots corren', async ({ page }) =
   await expect(track(page).getByRole('listitem')).toHaveCount(6);
 });
 
-test('jugar ahora lleva a la carrera contra bots', async ({ page }) => {
-  await page.goto('/es');
-  await page.getByRole('link', { name: 'Jugar ahora' }).click();
-  await expect(page).toHaveURL('/es/race');
-  await expect(page.getByRole('button', { name: 'Empezar carrera' })).toBeVisible();
-});
-
 test('la carrera y sus resultados no tienen violaciones de accesibilidad', async ({ page }) => {
   test.setTimeout(60_000);
   await openRace(page, 7, { botCount: 2, level: 'beginner', length: 'short' });

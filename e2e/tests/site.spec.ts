@@ -5,6 +5,8 @@ const PAGES = [
   '/es',
   '/es/practice',
   '/es/race',
+  '/es/play',
+  '/es/room',
   '/es/leaderboards',
   '/es/settings',
   '/es/login',

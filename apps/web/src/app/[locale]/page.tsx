@@ -7,8 +7,8 @@ import { Link } from '@/i18n/navigation';
 const MODES = [
   { key: 'practice', href: '/practice' },
   { key: 'bots', href: '/race' },
-  { key: 'public', href: null },
-  { key: 'private', href: null },
+  { key: 'public', href: '/play' },
+  { key: 'private', href: '/room' },
   { key: 'ghost', href: null },
   { key: 'daily', href: null },
   { key: 'targeted', href: null },
@@ -21,9 +21,8 @@ export default function HomePage() {
       <section className="flex flex-col items-start gap-8">
         <ComposedTitle text="tecleo" />
         <p className="max-w-xl text-xl leading-relaxed text-muted-foreground">{t('tagline')}</p>
-        {/* Hasta que exista el matchmaking (Fase 5), jugar es una carrera contra bots. */}
         <Button size="lg" asChild className="h-12 px-6 text-base">
-          <Link href="/race">{t('playNow')}</Link>
+          <Link href="/play">{t('playNow')}</Link>
         </Button>
       </section>
 

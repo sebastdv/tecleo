@@ -33,8 +33,15 @@ const NAV_ITEMS = [
   { href: '/leaderboards', key: 'leaderboards' },
 ] as const;
 
+/** "Carreras" agrupa las tres pantallas de carrera (bots, pública y salas). */
+const SECTIONS: Readonly<Record<string, readonly string[]>> = {
+  '/race': ['/race', '/play', '/room'],
+};
+
 function isActive(pathname: string, href: string): boolean {
-  return pathname === href || pathname.startsWith(`${href}/`);
+  return (SECTIONS[href] ?? [href]).some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
 }
 
 interface NavLinksProps {

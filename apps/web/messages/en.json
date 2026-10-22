@@ -284,7 +284,65 @@
   },
   "room": {
     "title": "Room {code}",
-    "description": "Private rooms let you pick the language, text, bots and player count, and ask for a rematch without leaving."
+    "description": "Share the code or the link. The race starts when everyone is ready.",
+    "entryTitle": "Private room",
+    "entryDescription": "Create a room and share the code with anyone you like, or join with a code someone sent you.",
+    "createTitle": "Create a room",
+    "createHint": "You'll be the host: pick the language, text length, bots and how many people can join.",
+    "create": "Create room",
+    "creating": "Creating the room…",
+    "joinTitle": "Join with a code",
+    "codeLabel": "Room code",
+    "codeHint": "Six letters or digits, case doesn't matter.",
+    "codeInvalid": "Codes have six characters: letters except I, L, O and digits 2 to 9.",
+    "join": "Join",
+    "guestName": "Your racing name",
+    "guestNameHint": "Without an account, this is how others see you. Leave it empty to get a random one.",
+    "connecting": "Connecting to the room…",
+    "reconnecting": "Connection lost. Reconnecting… what you typed is kept.",
+    "connectionFailed": "Couldn't reach the race server. Check your connection and reload the page.",
+    "code": "Code",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "players": "Players ({count}/{max})",
+    "host": "host",
+    "you": "you",
+    "ready": "Ready",
+    "notReady": "Waiting",
+    "disconnected": "disconnected",
+    "imReady": "I'm ready",
+    "cancelReady": "Not ready anymore",
+    "startNow": "Start now",
+    "readyHint": "The race starts when everyone is ready or when the host starts it.",
+    "config": "Room settings",
+    "configHostOnly": "Only the host can change them.",
+    "language": "Text language",
+    "languages": {
+      "es": "Spanish",
+      "en": "English"
+    },
+    "length": "Text length",
+    "bots": "Bots",
+    "botLevel": "Bot level",
+    "maxPlayers": "Maximum players",
+    "waitingResults": "Waiting for the others to finish…",
+    "arrived": "You finished {position, selectordinal, one {#st} two {#nd} few {#rd} other {#th}}. Waiting for the others…",
+    "dnf": "You didn't finish in time",
+    "flagged": "Your result was flagged for review and doesn't count for leaderboards.",
+    "guestNotSaved": "Without an account, online races aren't saved. <register>Create an account</register> to keep them.",
+    "leave": "Leave room",
+    "back": "Back",
+    "dismiss": "Dismiss",
+    "errors": {
+      "VALIDATION": "The server didn't understand what was sent. Reload the page.",
+      "ROOM_NOT_FOUND": "There's no room with that code (or it was closed).",
+      "ROOM_FULL": "The room is full.",
+      "ROOM_CLOSED": "This room's race already started; you can join when it ends.",
+      "NOT_HOST": "Only the host can do that.",
+      "NOT_IN_ROOM": "You're no longer in this room.",
+      "RATE_LIMITED": "Too many actions in a row; wait a moment.",
+      "INVALID_RUN": "The server couldn't validate your race."
+    }
   },
   "leaderboards": {
     "title": "Leaderboards",
@@ -385,5 +443,19 @@
     "saved": "Result saved to your profile.",
     "local": "Result saved in this browser. <register>Create an account</register> to keep it.",
     "error": "The result couldn't be saved to your account."
+  },
+  "play": {
+    "title": "Public race",
+    "description": "You join an open room in your text language. If nobody else shows up within a few seconds, bots fill in.",
+    "searching": "Looking for opponents…",
+    "startsIn": "Filling with bots in {seconds} s",
+    "fillHint": "Public races have five runners; bots take any free spots.",
+    "another": "Another race"
+  },
+  "raceModes": {
+    "label": "Race type",
+    "bots": "Against bots",
+    "public": "Public",
+    "private": "Private room"
   }
 }

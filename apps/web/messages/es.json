@@ -284,7 +284,65 @@
   },
   "room": {
     "title": "Sala {code}",
-    "description": "Las salas privadas te dejan elegir idioma, texto, bots y cantidad de jugadores, y pedir revancha sin salir."
+    "description": "Comparte el código o el enlace. La carrera arranca cuando todos estén listos.",
+    "entryTitle": "Sala privada",
+    "entryDescription": "Crea una sala y comparte el código con quien quieras, o entra con el código que te pasaron.",
+    "createTitle": "Crear una sala",
+    "createHint": "Serás el anfitrión: eliges idioma, longitud del texto, bots y cuántas personas entran.",
+    "create": "Crear sala",
+    "creating": "Creando la sala…",
+    "joinTitle": "Entrar con un código",
+    "codeLabel": "Código de la sala",
+    "codeHint": "Seis letras o números, sin importar mayúsculas.",
+    "codeInvalid": "El código tiene seis caracteres: letras sin I, L, O y números del 2 al 9.",
+    "join": "Entrar",
+    "guestName": "Tu nombre en las carreras",
+    "guestNameHint": "Sin cuenta, así te verán los demás. Si lo dejas vacío te toca uno al azar.",
+    "connecting": "Conectando con la sala…",
+    "reconnecting": "Se cortó la conexión. Reconectando… lo que escribiste se conserva.",
+    "connectionFailed": "No se pudo conectar con el servidor de carreras. Revisa tu conexión y recarga la página.",
+    "code": "Código",
+    "copyLink": "Copiar enlace",
+    "linkCopied": "Enlace copiado",
+    "players": "Jugadores ({count}/{max})",
+    "host": "anfitrión",
+    "you": "tú",
+    "ready": "Listo",
+    "notReady": "Esperando",
+    "disconnected": "desconectado",
+    "imReady": "Estoy listo",
+    "cancelReady": "Ya no estoy listo",
+    "startNow": "Empezar ya",
+    "readyHint": "La carrera arranca cuando todos estén listos o cuando el anfitrión la empiece.",
+    "config": "Configuración de la sala",
+    "configHostOnly": "Solo el anfitrión puede cambiarla.",
+    "language": "Idioma del texto",
+    "languages": {
+      "es": "Español",
+      "en": "Inglés"
+    },
+    "length": "Longitud del texto",
+    "bots": "Bots",
+    "botLevel": "Nivel de los bots",
+    "maxPlayers": "Máximo de jugadores",
+    "waitingResults": "Esperando a que lleguen los demás…",
+    "arrived": "Llegaste {position}.º. Esperando a los demás…",
+    "dnf": "No terminaste a tiempo",
+    "flagged": "Tu resultado quedó marcado para revisión y no cuenta para los rankings.",
+    "guestNotSaved": "Sin cuenta, las carreras en línea no se guardan. <register>Crea una cuenta</register> para conservarlas.",
+    "leave": "Salir de la sala",
+    "back": "Volver",
+    "dismiss": "Cerrar",
+    "errors": {
+      "VALIDATION": "El servidor no entendió lo que se envió. Recarga la página.",
+      "ROOM_NOT_FOUND": "No existe una sala con ese código (o ya se cerró).",
+      "ROOM_FULL": "La sala está llena.",
+      "ROOM_CLOSED": "La carrera de esta sala ya empezó; podrás entrar cuando termine.",
+      "NOT_HOST": "Solo el anfitrión puede hacer eso.",
+      "NOT_IN_ROOM": "Ya no estás en esta sala.",
+      "RATE_LIMITED": "Demasiadas acciones seguidas; espera un momento.",
+      "INVALID_RUN": "El servidor no pudo validar tu carrera."
+    }
   },
   "leaderboards": {
     "title": "Rankings",
@@ -385,5 +443,19 @@
     "saved": "Resultado guardado en tu perfil.",
     "local": "Resultado guardado en este navegador. <register>Crea una cuenta</register> para conservarlo.",
     "error": "No se pudo guardar el resultado en tu cuenta."
+  },
+  "play": {
+    "title": "Carrera pública",
+    "description": "Entras a una sala abierta en el idioma de tus textos. Si en unos segundos no llega nadie más, completan los bots.",
+    "searching": "Buscando rivales…",
+    "startsIn": "Se completa con bots en {seconds} s",
+    "fillHint": "Las carreras públicas son de cinco corredores; los lugares libres los ocupan bots.",
+    "another": "Otra carrera"
+  },
+  "raceModes": {
+    "label": "Tipo de carrera",
+    "bots": "Contra bots",
+    "public": "Pública",
+    "private": "Sala privada"
   }
 }

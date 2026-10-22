@@ -4,3 +4,4 @@ export * from './auth.js';
 export * from './results.js';
 export * from './profile.js';
 export * from './texts.js';
+export * from './realtime.js';

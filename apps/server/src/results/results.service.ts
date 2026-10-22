@@ -23,6 +23,7 @@ import type { z } from 'zod';
 import { ApiException } from '../common/api-exception.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { addKeyStats } from './key-stats.js';
 import { packKeystrokes } from './keystroke-storage.js';
 import { toResultSummary } from './result-summary.js';
 
@@ -213,28 +214,10 @@ export class ResultsService {
         });
       }
       // Las teclas débiles solo aprenden de resultados limpios.
-      if (flagReason === null) await this.addKeyStats(tx, userId, metrics);
+      if (flagReason === null) await addKeyStats(tx, userId, metrics);
       return player;
     });
 
     return toResultSummary({ ...result, runners: 1 + bots.length });
-  }
-
-  /** Suma intentos y errores por tecla y por par de letras en una sola sentencia. */
-  private async addKeyStats(tx: Prisma.TransactionClient, userId: string, metrics: RaceMetrics) {
-    const rows = [
-      ...Object.entries(metrics.keyStats).map(([key, stat]) => ['key', key, stat] as const),
-      ...Object.entries(metrics.bigramStats).map(([key, stat]) => ['bigram', key, stat] as const),
-    ];
-    if (rows.length === 0) return;
-    await tx.$executeRaw`
-      INSERT INTO "KeyStat" ("userId", "kind", "key", "attempts", "errors")
-      SELECT ${userId}::uuid, k::"KeyStatKind", key, a, e
-      FROM unnest(${rows.map((r) => r[0])}::text[], ${rows.map((r) => r[1])}::text[],
-                  ${rows.map((r) => r[2].attempts)}::int[], ${rows.map((r) => r[2].errors)}::int[])
-        AS t(k, key, a, e)
-      ON CONFLICT ("userId", "kind", "key") DO UPDATE
-        SET "attempts" = "KeyStat"."attempts" + EXCLUDED."attempts",
-            "errors" = "KeyStat"."errors" + EXCLUDED."errors"`;
   }
 }

@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { ConfigModule, ENV, type Env } from './config/config.module.js';
 import { HealthController } from './health/health.controller.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { RealtimeModule } from './realtime/realtime.module.js';
 import { ResultsModule } from './results/results.module.js';
 import { TextsModule } from './texts/texts.module.js';
 import { UsersModule } from './users/users.module.js';
@@ -23,6 +24,7 @@ import { UsersModule } from './users/users.module.js';
     UsersModule,
     ResultsModule,
     TextsModule,
+    RealtimeModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

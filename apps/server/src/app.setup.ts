@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 
 import { HttpExceptionFilter } from './common/http-exception.filter.js';
+import { CorsIoAdapter } from './realtime/cors-io.adapter.js';
 
 import { APP_VERSION, ENV, type Env } from './config/config.module.js';
 
@@ -15,6 +16,7 @@ export function setupApp(app: INestApplication): void {
   app.use(cookieParser());
   app.useGlobalFilters(new HttpExceptionFilter());
   app.enableCors({ origin: env.WEB_ORIGIN, credentials: true });
+  app.useWebSocketAdapter(new CorsIoAdapter(app, env.WEB_ORIGIN));
   app.enableShutdownHooks();
 
   const document = SwaggerModule.createDocument(

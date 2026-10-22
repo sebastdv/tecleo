@@ -30,6 +30,12 @@ const envSchema = z.object({
   AUTH_RATE_LIMIT: z.coerce.number().int().positive().default(10),
   /** Peticiones por minuto y por IP en el resto de la API. */
   RATE_LIMIT: z.coerce.number().int().positive().default(120),
+  /** Espera del matchmaking antes de completar con bots. */
+  MATCHMAKING_WAIT_MS: z.coerce.number().int().min(0).default(10_000),
+  /** Cuenta regresiva antes de la salida. */
+  COUNTDOWN_MS: z.coerce.number().int().min(0).default(5_000),
+  /** Margen para volver a una carrera tras perder la conexión. */
+  RECONNECT_GRACE_MS: z.coerce.number().int().min(0).default(30_000),
   /** Saltos de proxy de confianza para leer la IP real (rate limiting detrás de Next/Render). */
   TRUST_PROXY: z.coerce.number().int().min(0).default(1),
 });

@@ -19,6 +19,9 @@ describe('loadEnv', () => {
       REFRESH_COOKIE_PATH: '/api/auth',
       AUTH_RATE_LIMIT: 10,
       RATE_LIMIT: 120,
+      MATCHMAKING_WAIT_MS: 10_000,
+      COUNTDOWN_MS: 5_000,
+      RECONNECT_GRACE_MS: 30_000,
       TRUST_PROXY: 1,
     });
   });

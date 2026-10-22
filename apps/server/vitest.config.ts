@@ -15,6 +15,10 @@ export default defineConfig({
       // Las pruebas registran muchos usuarios; la del rate limiting baja el límite a propósito.
       AUTH_RATE_LIMIT: '1000',
       RATE_LIMIT: '10000',
+      // Tiempos cortos para que las carreras de prueba no esperen de verdad 10 s.
+      MATCHMAKING_WAIT_MS: '1200',
+      COUNTDOWN_MS: '500',
+      RECONNECT_GRACE_MS: '3000',
     },
     // Las pruebas de integración comparten la base: una a la vez.
     fileParallelism: false,

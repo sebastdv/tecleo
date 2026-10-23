@@ -7,14 +7,18 @@
   "scripts": {
     "e2e": "playwright test",
     "lint": "eslint .",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "lighthouse": "node scripts/lighthouse.ts",
+    "screenshots": "node scripts/screenshots.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
     "@playwright/test": "1.64.1",
     "@tecleo/eslint-config": "workspace:*",
     "@types/node": "24.19.2",
+    "chrome-launcher": "1.2.2",
     "eslint": "9.39.5",
+    "lighthouse": "13.5.0",
     "typescript": "6.0.3"
   }
 }

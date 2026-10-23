@@ -1,37 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
-/**
- * Campo visible por su etiqueta. Con Cache Components, Next conserva ocultas (Activity) las
- * páginas visitadas antes, y `getByLabel` también encuentra sus campos.
- */
-const field = (page: Page, label: string) => page.getByLabel(label).filter({ visible: true });
-
-/** Datos de una cuenta de prueba nueva por test (la base local o la de CI). */
-function newAccount() {
-  const id = `${Date.now().toString(36)}${Math.floor(Math.random() * 1e4).toString(36)}`;
-  return { nickname: `e2e_${id}`, email: `e2e_${id}@tecleo.test`, password: `clave-${id}-e2e` };
-}
-
-async function register(page: Page, account: ReturnType<typeof newAccount>, importGuest = true) {
-  await page.goto('/es/register');
-  await field(page, 'Apodo').fill(account.nickname);
-  await field(page, 'Correo electrónico').fill(account.email);
-  await field(page, 'Contraseña').fill(account.password);
-  const guestOption = page.getByRole('checkbox');
-  if (!importGuest && (await guestOption.count()) > 0) await guestOption.uncheck();
-  await page.getByRole('button', { name: 'Crear cuenta' }).click();
-  await expect(page.getByRole('button', { name: `Cuenta: ${account.nickname}` })).toBeVisible();
-}
-
-/** Escribe con un ritmo irregular (como una persona): el antitrampa no lo marca. */
-async function typeLikeAHuman(page: Page, text: string) {
-  let index = 0;
-  for (const ch of text) {
-    await page.keyboard.type(ch);
-    await page.waitForTimeout(45 + ((index++ * 37) % 11) * 9);
-  }
-}
+import { field, newAccount, register, typeLikeAHuman } from './support.js';
 
 async function playTenWords(page: Page, seed: number) {
   await page.goto(`/es/practice?seed=${seed}`);
@@ -122,7 +92,7 @@ test('con sesión, el resultado se guarda en el perfil con estadísticas y mapa 
   await page.getByRole('menuitem', { name: 'Mi perfil' }).click();
   await expect(page.getByRole('heading', { name: 'Evolución' })).toBeVisible();
   await expect(page.getByRole('list', { name: 'Teclas con más errores' })).toBeVisible();
-  await expect(page.getByText('pruebas')).toBeVisible();
+  await expect(page.getByText('pruebas', { exact: true })).toBeVisible();
 
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
@@ -157,9 +127,13 @@ test('avatar y país se cambian desde Configuración', async ({ page }) => {
   await page.goto('/es/settings');
   await page
     .getByRole('radiogroup', { name: 'Avatar' })
-    .getByRole('radio', { name: 'Bosque' })
+    .getByRole('radio', { name: 'Tinta' })
     .click();
   await expect(page.getByText('Guardado.')).toBeVisible();
+  // Los demás acabados se desbloquean con nivel o logros.
+  await expect(
+    page.getByRole('radiogroup', { name: 'Avatar' }).getByRole('radio', { name: 'Bosque' }),
+  ).toBeDisabled();
   await field(page, 'País').click();
   await page.getByRole('option', { name: 'Colombia' }).click();
   await page.goto(`/es/profile/${account.nickname}`);

@@ -1,4 +1,4 @@
-import { AVATARS, type AvatarId, type PublicUser } from '@tecleo/shared';
+import { AVATARS, type AvatarId, type Me, type PublicUser } from '@tecleo/shared';
 
 import type { User } from '../generated/prisma/client.js';
 
@@ -16,4 +16,9 @@ export function toPublicUser(user: User): PublicUser {
     xp: user.xp,
     createdAt: user.createdAt.toISOString(),
   };
+}
+
+/** La propia cuenta: lo público más el rol. */
+export function toMe(user: User): Me {
+  return { ...toPublicUser(user), isAdmin: user.role === 'admin' };
 }

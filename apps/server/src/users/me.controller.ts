@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Patch, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
-  publicUserSchema,
+  meSchema,
   storedSettingsSchema,
   updateProfileSchema,
   userSettingsSchema,
-  type PublicUser,
+  type Me,
   type StoredSettings,
   type UserSettings,
 } from '@tecleo/shared';
@@ -25,19 +25,19 @@ export class MeController {
 
   @Get()
   @ApiOperation({ summary: 'Usuario de la sesión' })
-  @ApiOkResponse({ schema: zodToOpenApi(publicUserSchema) })
-  me(@CurrentUserId() userId: string): Promise<PublicUser> {
+  @ApiOkResponse({ schema: zodToOpenApi(meSchema) })
+  me(@CurrentUserId() userId: string): Promise<Me> {
     return this.users.byId(userId);
   }
 
   @Patch()
-  @ApiOperation({ summary: 'Cambiar avatar o país' })
+  @ApiOperation({ summary: 'Cambiar avatar (si está desbloqueado) o país' })
   @ApiBody({ schema: zodToOpenApi(updateProfileSchema, 'input') })
-  @ApiOkResponse({ schema: zodToOpenApi(publicUserSchema) })
+  @ApiOkResponse({ schema: zodToOpenApi(meSchema) })
   update(
     @CurrentUserId() userId: string,
     @Body(new ZodValidationPipe(updateProfileSchema)) body: z.output<typeof updateProfileSchema>,
-  ): Promise<PublicUser> {
+  ): Promise<Me> {
     return this.users.updateProfile(userId, body);
   }
 

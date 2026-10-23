@@ -21,6 +21,7 @@ import {
 } from '@tecleo/engine';
 import {
   ROOM_CODE_ALPHABET,
+  type ProgressUpdate,
   type RaceProgressInput,
   type RaceResults,
   type RealtimeError,
@@ -55,9 +56,28 @@ export abstract class TextPicker {
   abstract pick(config: RoomConfig, excludeId?: string): Promise<RoomText>;
 }
 
-/** Guarda los resultados de quienes tienen cuenta; devuelve el id guardado por jugador. */
+/** Lo guardado de un jugador con cuenta: su resultado y lo que sumó a su progresión. */
+export interface SavedResult {
+  readonly id: string;
+  readonly progress: ProgressUpdate | null;
+}
+
+/** Resultados de la carrera tal como los recibe un jugador (con lo suyo guardado). */
+export function resultsForPlayer(
+  standings: RaceResults['standings'],
+  saved: ReadonlyMap<string, SavedResult>,
+  playerId: string,
+): RaceResults {
+  const own = saved.get(playerId);
+  return { standings, savedResultId: own?.id ?? null, progress: own?.progress ?? null };
+}
+
+/** Guarda los resultados de quienes tienen cuenta; devuelve lo guardado por jugador. */
 export abstract class RaceRecorder {
-  abstract record(room: Room, standings: RaceResults['standings']): Promise<Map<string, string>>;
+  abstract record(
+    room: Room,
+    standings: RaceResults['standings'],
+  ): Promise<Map<string, SavedResult>>;
 }
 
 export type RoomEvent =
@@ -74,7 +94,7 @@ export type RoomEvent =
       readonly type: 'results';
       readonly room: Room;
       readonly standings: RaceResults['standings'];
-      readonly saved: ReadonlyMap<string, string>;
+      readonly saved: ReadonlyMap<string, SavedResult>;
     }
   | { readonly type: 'closed'; readonly room: Room };
 
@@ -113,7 +133,7 @@ export class RoomsService {
   /** Clasificación de las carreras terminadas, para el estado de la sala. */
   private readonly standings = new WeakMap<Room, RaceResults['standings']>();
   /** Ids de los resultados guardados por jugador, una vez que la base respondió. */
-  private readonly saved = new WeakMap<Room, ReadonlyMap<string, string>>();
+  private readonly saved = new WeakMap<Room, ReadonlyMap<string, SavedResult>>();
 
   constructor(
     private readonly store: RoomStore,
@@ -461,7 +481,7 @@ export class RoomsService {
     const standings = this.standings.get(room);
     const saved = this.saved.get(room);
     if (room.phase !== 'finished' || !standings || !saved) return null;
-    return { standings, savedResultId: saved.get(playerId) ?? null };
+    return resultsForPlayer(standings, saved, playerId);
   }
 
   progressSnapshot(room: Room): { id: string; progress: number; wpm: number }[] {
@@ -630,7 +650,7 @@ export class RoomsService {
       .record(room, standings)
       .catch((error: unknown) => {
         this.logger.error(`No se pudieron guardar los resultados de ${room.code}`, error);
-        return new Map<string, string>();
+        return new Map<string, SavedResult>();
       })
       .then((saved) => {
         this.saved.set(room, saved);

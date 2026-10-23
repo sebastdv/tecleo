@@ -6,7 +6,7 @@ import type { z } from 'zod';
 import { ApiException } from '../common/api-exception.js';
 import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { toPublicUser } from '../users/public-user.js';
+import { toMe } from '../users/public-user.js';
 import { SessionsService, type IssuedSession } from './sessions.service.js';
 import { TokensService } from './tokens.service.js';
 
@@ -69,7 +69,7 @@ export class AuthService {
       session,
       response: {
         accessToken: await this.tokens.signAccessToken(user.id),
-        user: toPublicUser(user),
+        user: toMe(user),
       },
     };
   }
@@ -87,7 +87,7 @@ export class AuthService {
       session,
       response: {
         accessToken: await this.tokens.signAccessToken(userId),
-        user: toPublicUser(user),
+        user: toMe(user),
       },
     };
   }

@@ -18,6 +18,11 @@ enum TextType {
   words
 }
 
+enum Role {
+  user
+  admin
+}
+
 enum RaceMode {
   practice
   bots
@@ -42,12 +47,16 @@ model User {
   country      String?  @db.Char(2)
   xp           Int      @default(0)
   level        Int      @default(1)
+  /// Los administradores gestionan los textos (`pnpm --filter @tecleo/server admin:grant`).
+  role         Role     @default(user)
   createdAt    DateTime @default(now())
 
-  settings UserSettings?
-  sessions Session[]
-  results  RaceResult[]
-  keyStats KeyStat[]
+  settings     UserSettings?
+  sessions     Session[]
+  results      RaceResult[]
+  keyStats     KeyStat[]
+  achievements UserAchievement[]
+  ratings      TextRating[]
 }
 
 model UserSettings {
@@ -62,15 +71,15 @@ model UserSettings {
 /// Sesión de refresh token. Se guarda solo el hash del token; cada refresh rota el token y
 /// marca el anterior. Si llega un token ya rotado, se revoca toda la familia (posible robo).
 model Session {
-  id         String    @id @default(uuid(7)) @db.Uuid
-  userId     String    @db.Uuid
-  familyId   String    @db.Uuid
-  tokenHash  String    @unique
-  expiresAt  DateTime
-  rotatedAt  DateTime?
-  revokedAt  DateTime?
-  userAgent  String?
-  createdAt  DateTime  @default(now())
+  id        String    @id @default(uuid(7)) @db.Uuid
+  userId    String    @db.Uuid
+  familyId  String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  rotatedAt DateTime?
+  revokedAt DateTime?
+  userAgent String?
+  createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -95,28 +104,31 @@ model Text {
   dislikes       Int      @default(0)
   createdAt      DateTime @default(now())
 
-  races Race[]
+  races   Race[]
+  daily   DailyChallenge[]
+  ratings TextRating[]
 
   @@index([language, type, active])
 }
 
 model Race {
-  id         String   @id @default(uuid(7)) @db.Uuid
-  textId     String?
+  id        String   @id @default(uuid(7)) @db.Uuid
+  textId    String?
   /// Texto exacto que se escribió (normalizado); necesario para repeticiones y validación.
-  content    String
-  language   String   @db.VarChar(2)
-  mode       RaceMode
+  content   String
+  language  String   @db.VarChar(2)
+  mode      RaceMode
   /// Opciones de la prueba (modo de práctica, límite de tiempo, bots, reglas…).
-  config     Json
+  config    Json
   /// Semilla de la carrera: con ella se regeneran exactamente los mismos bots.
-  seed       Int?
-  createdAt  DateTime @default(now())
+  seed      Int?
+  createdAt DateTime @default(now())
 
   text    Text?        @relation(fields: [textId], references: [id])
   results RaceResult[]
 
   @@index([mode, createdAt])
+  @@index([textId])
 }
 
 model RaceResult {
@@ -144,6 +156,8 @@ model RaceResult {
   /// Sospechoso para el antitrampa: se guarda pero no cuenta para rankings.
   flagged       Boolean  @default(false)
   flagReason    String?
+  /// XP que sumó a la cuenta (0 para bots, invitados y resultados marcados).
+  xp            Int      @default(0)
   createdAt     DateTime @default(now())
 
   race Race  @relation(fields: [raceId], references: [id], onDelete: Cascade)
@@ -170,4 +184,39 @@ model KeyStat {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, kind, key])
+}
+
+/// Logros conseguidos. El catálogo vive en código (`ACHIEVEMENT_RULES` de @tecleo/shared).
+model UserAchievement {
+  userId        String   @db.Uuid
+  achievementId String
+  unlockedAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, achievementId])
+}
+
+/// Texto del desafío diario de cada idioma; se elige al pedirlo por primera vez ese día (UTC).
+model DailyChallenge {
+  date     DateTime @db.Date
+  language String   @db.VarChar(2)
+  textId   String
+
+  text Text @relation(fields: [textId], references: [id])
+
+  @@id([date, language])
+}
+
+/// 👍 (1) o 👎 (-1) de una persona a un texto; los totales se copian en Text.likes/dislikes.
+model TextRating {
+  userId    String   @db.Uuid
+  textId    String
+  value     Int
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text Text @relation(fields: [textId], references: [id], onDelete: Cascade)
+
+  @@id([userId, textId])
 }

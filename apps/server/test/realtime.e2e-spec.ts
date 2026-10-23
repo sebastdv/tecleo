@@ -148,8 +148,10 @@ describe('tiempo real (Socket.IO)', () => {
     await new Promise((resolve) => setTimeout(resolve, 1_800));
     const results = next<RaceResults>(socket, EVENTS.raceResults);
     await socket.emitWithAck(EVENTS.raceFinish, { keystrokes: keystrokesFor(TEXT) });
-    const { savedResultId } = await results;
+    const { savedResultId, progress } = await results;
     expect(savedResultId).not.toBeNull();
+    expect(progress?.xpGained).toBeGreaterThan(0);
+    expect(progress?.achievements).toEqual(expect.arrayContaining(['first-race', 'online-first']));
     const saved = await app
       .get(PrismaService)
       .raceResult.findUniqueOrThrow({ where: { id: savedResultId ?? '' } });

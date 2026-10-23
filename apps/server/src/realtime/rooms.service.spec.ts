@@ -36,7 +36,10 @@ class FakeRecorder extends RaceRecorder {
       new Map(
         [...room.players.values()]
           .filter((player) => player.identity.userId !== null)
-          .map((player) => [player.identity.id, `result-${player.identity.id}`]),
+          .map((player) => [
+            player.identity.id,
+            { id: `result-${player.identity.id}`, progress: null },
+          ]),
       ),
     ),
   );
@@ -194,13 +197,14 @@ describe('RoomsService', () => {
       if (results?.type !== 'results') throw new Error('Sin resultados');
       expect(results.standings.map((s) => s.id).slice(0, 2)).toEqual([ana.id, beto.id]);
       expect(results.standings.find((s) => s.isBot)).toBeDefined();
-      expect(results.saved.get(ana.id)).toBe(`result-${ana.id}`);
+      expect(results.saved.get(ana.id)?.id).toBe(`result-${ana.id}`);
       expect(results.saved.has(beto.id)).toBe(false);
       expect(rooms.toState(room).players.find((p) => p.id === ana.id)?.position).toBe(1);
       // Quien vuelve a la sala terminada recibe los mismos resultados con su id guardado.
       expect(rooms.resultsFor(room, ana.id)).toEqual({
         standings: results.standings,
         savedResultId: `result-${ana.id}`,
+        progress: null,
       });
       expect(rooms.resultsFor(room, beto.id)?.savedResultId).toBeNull();
     });

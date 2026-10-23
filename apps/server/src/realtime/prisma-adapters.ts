@@ -1,13 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { analyze, createTypingState, encodeKeystrokes, playKeystrokes } from '@tecleo/engine';
-import type { RaceResults, RoomConfig } from '@tecleo/shared';
+import {
+  analyze,
+  correctChars,
+  createTypingState,
+  encodeKeystrokes,
+  playKeystrokes,
+} from '@tecleo/engine';
+import { raceXp, type RaceResults, type RoomConfig } from '@tecleo/shared';
 
 import type { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { applyProgress, previousMarks } from '../progression/progression.js';
 import { addKeyStats } from '../results/key-stats.js';
 import { packKeystrokes } from '../results/keystroke-storage.js';
 import type { Room, RoomText } from './room.js';
-import { RaceRecorder, TextPicker } from './rooms.service.js';
+import { RaceRecorder, TextPicker, type SavedResult } from './rooms.service.js';
 
 @Injectable()
 export class PrismaTextPicker extends TextPicker {
@@ -35,15 +42,18 @@ export class PrismaTextPicker extends TextPicker {
   }
 }
 
-/** Guarda la carrera multijugador: resultados de quienes tienen cuenta (con pulsaciones) y bots. */
+/**
+ * Guarda la carrera multijugador: resultados de quienes tienen cuenta (con pulsaciones, XP y
+ * logros) y bots.
+ */
 @Injectable()
 export class PrismaRaceRecorder extends RaceRecorder {
   constructor(private readonly prisma: PrismaService) {
     super();
   }
 
-  async record(room: Room, standings: RaceResults['standings']): Promise<Map<string, string>> {
-    const saved = new Map<string, string>();
+  async record(room: Room, standings: RaceResults['standings']): Promise<Map<string, SavedResult>> {
+    const saved = new Map<string, SavedResult>();
     const registered = [...room.players.values()].flatMap((player) =>
       player.identity.userId === null ? [] : [{ player, userId: player.identity.userId }],
     );
@@ -77,6 +87,17 @@ export class PrismaRaceRecorder extends RaceRecorder {
       for (const { player, userId } of registered) {
         const standing = positions.get(player.identity.id);
         const run = player.run;
+        const previous = await previousMarks(tx, userId, room.text.id);
+        const flagged = run?.flagReason != null;
+        const xp = raceXp({
+          wpm: standing?.wpm ?? 0,
+          accuracy: run?.metrics.accuracy ?? 0,
+          correctChars: run ? correctChars(run.state) : player.progressChars,
+          completed: run !== null,
+          position: standing?.position ?? null,
+          runners: standings.length,
+          flagged,
+        });
         const result = await tx.raceResult.create({
           data: {
             raceId: race.id,
@@ -92,11 +113,13 @@ export class PrismaRaceRecorder extends RaceRecorder {
             mode: room.mode,
             language: room.config.language,
             validated: run !== null,
-            flagged: run?.flagReason != null,
+            flagged,
             flagReason: run?.flagReason ?? null,
+            xp,
           },
         });
-        saved.set(player.identity.id, result.id);
+        const progress = await applyProgress(tx, userId, xp, previous);
+        saved.set(player.identity.id, { id: result.id, progress });
         if (run?.flagReason === null) await addKeyStats(tx, userId, run.metrics);
       }
       if (room.bots.length > 0) {

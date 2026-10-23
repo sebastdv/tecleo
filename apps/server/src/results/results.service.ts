@@ -17,14 +17,16 @@ import {
   type RaceMetrics,
   type TypingState,
 } from '@tecleo/engine';
-import type { ResultSummary, submitResultSchema } from '@tecleo/shared';
+import { raceXp, type ResultSummary, type submitResultSchema } from '@tecleo/shared';
 import type { z } from 'zod';
 
 import { ApiException } from '../common/api-exception.js';
 import type { Prisma } from '../generated/prisma/client.js';
+import { DailyService } from '../daily/daily.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { applyProgress, previousMarks } from '../progression/progression.js';
 import { addKeyStats } from './key-stats.js';
-import { packKeystrokes } from './keystroke-storage.js';
+import { packKeystrokes, unpackKeystrokes } from './keystroke-storage.js';
 import { toResultSummary } from './result-summary.js';
 
 type SubmitResult = z.output<typeof submitResultSchema>;
@@ -48,10 +50,18 @@ interface Verified {
 
 @Injectable()
 export class ResultsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly daily: DailyService,
+  ) {}
 
   /** Reproduce el registro con el motor: las métricas oficiales salen de aquí, no del cliente. */
   private async verify(input: SubmitResult): Promise<Verified> {
+    if (input.mode === 'daily') {
+      const current =
+        input.textId !== null && (await this.daily.isCurrent(input.textId, input.language));
+      if (!current) throw new ApiException(422, 'NOT_DAILY', 'No es el texto del desafío de hoy');
+    }
     if (input.textId !== null) {
       const text = await this.prisma.text.findUnique({ where: { id: input.textId } });
       const options = { preserveLines: input.preserveLines };
@@ -69,7 +79,8 @@ export class ResultsService {
       text: input.content,
       preserveLines: input.preserveLines,
       timeLimitMs: input.timeLimitMs,
-      startOn: input.mode === 'bots' ? 'signal' : 'firstInput',
+      // Con rivales hay cuenta regresiva: el tiempo corre desde la señal de salida.
+      startOn: input.mode === 'bots' || input.mode === 'ghost' ? 'signal' : 'firstInput',
       rules: input.rules,
     });
     const state = playKeystrokes(template, keystrokes);
@@ -143,6 +154,14 @@ export class ResultsService {
       positions = new Map(standings.map((standing) => [standing.id, standing.position]));
     }
 
+    // Carrera fantasma: gana quien completó el texto en menos tiempo.
+    let runners = 1 + bots.length;
+    if (input.mode === 'ghost') {
+      const ghostMs = await this.ghostDuration(input, content);
+      positions = new Map([[PLAYER_ID, completed && metrics.durationMs < ghostMs ? 1 : 2]]);
+      runners = 2;
+    }
+
     const botTemplate = createTypingState({
       text: content,
       preserveLines: input.preserveLines,
@@ -155,7 +174,19 @@ export class ResultsService {
       preserveLines: input.preserveLines,
       rules: input.rules,
       ...(input.bots && { bots: { levels: input.bots.levels } }),
+      ...(input.ghostResultId && { ghostResultId: input.ghostResultId }),
     };
+    const previous = await previousMarks(this.prisma, userId, input.textId);
+    const position = positions.get(PLAYER_ID) ?? null;
+    const xp = raceXp({
+      wpm: metrics.wpm,
+      accuracy: metrics.accuracy,
+      correctChars: correctChars(state),
+      completed,
+      position,
+      runners,
+      flagged: flagReason !== null,
+    });
 
     const result = await this.prisma.$transaction(async (tx) => {
       const race = await tx.race.create({
@@ -173,7 +204,7 @@ export class ResultsService {
         data: {
           raceId: race.id,
           userId,
-          position: positions.get(PLAYER_ID) ?? null,
+          position,
           wpm: metrics.wpm,
           rawWpm: metrics.rawWpm,
           accuracy: metrics.accuracy,
@@ -187,6 +218,7 @@ export class ResultsService {
           validated: true,
           flagged: flagReason !== null,
           flagReason,
+          xp,
           createdAt,
         },
       });
@@ -215,9 +247,38 @@ export class ResultsService {
       }
       // Las teclas débiles solo aprenden de resultados limpios.
       if (flagReason === null) await addKeyStats(tx, userId, metrics);
-      return player;
+      const progress = await applyProgress(tx, userId, xp, previous);
+      return { player, progress };
     });
 
-    return toResultSummary({ ...result, runners: 1 + bots.length });
+    return toResultSummary({ ...result.player, runners }, result.progress);
+  }
+
+  /** Tiempo del fantasma: tiene que ser una prueba completa sobre el mismo texto. */
+  private async ghostDuration(input: SubmitResult, content: string): Promise<number> {
+    const ghost = input.ghostResultId
+      ? await this.prisma.raceResult.findUnique({
+          where: { id: input.ghostResultId },
+          include: { race: true },
+        })
+      : null;
+    if (!ghost?.completed || !ghost.keystrokes) {
+      throw new ApiException(404, 'NOT_FOUND', 'No existe esa carrera para el fantasma');
+    }
+    const options = { preserveLines: input.preserveLines };
+    if (normalizeText(ghost.race.content, options) !== normalizeText(content, options)) {
+      throw new ApiException(422, 'TEXT_MISMATCH', 'El fantasma corrió otro texto');
+    }
+    // Se mide reproduciendo sus pulsaciones, no con lo guardado: misma vara para los dos.
+    const template = createTypingState({
+      text: ghost.race.content,
+      preserveLines: input.preserveLines,
+      startOn: 'signal',
+      rules: input.rules,
+    });
+    const replay = playKeystrokes(template, decodeKeystrokes(unpackKeystrokes(ghost.keystrokes)));
+    return replay.phase === 'finished' && correctChars(replay) === totalChars(replay)
+      ? analyze(replay).durationMs
+      : Number.POSITIVE_INFINITY;
   }
 }

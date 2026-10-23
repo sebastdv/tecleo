@@ -1,8 +1,11 @@
-import type { ResultSummary } from '@tecleo/shared';
+import type { ProgressUpdate, ResultSummary } from '@tecleo/shared';
 
 import type { RaceResult } from '../generated/prisma/client.js';
 
-export function toResultSummary(result: RaceResult & { runners: number }): ResultSummary {
+export function toResultSummary(
+  result: RaceResult & { runners: number },
+  progress: ProgressUpdate | null = null,
+): ResultSummary {
   return {
     id: result.id,
     raceId: result.raceId,
@@ -19,5 +22,6 @@ export function toResultSummary(result: RaceResult & { runners: number }): Resul
     ignoreAccents: result.ignoreAccents,
     flagged: result.flagged,
     createdAt: result.createdAt.toISOString(),
+    progress,
   };
 }

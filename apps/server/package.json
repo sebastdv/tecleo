@@ -13,7 +13,8 @@
     "test": "prisma generate && vitest run",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "admin:grant": "node --env-file-if-exists=.env --import tsx prisma/admin-grant.ts"
   },
   "dependencies": {
     "@nestjs/common": "12.2.0",

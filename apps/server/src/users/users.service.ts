@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import {
+  ACHIEVEMENT_IDS,
+  AVATAR_UNLOCKS,
+  isUnlocked,
   parseSettings,
+  type AchievementId,
+  type Me,
   type Profile,
   type ProfileStats,
-  type PublicUser,
   type RacesPage,
   type racesQuerySchema,
   type UpdateProfileInput,
@@ -15,7 +19,7 @@ import { ApiException } from '../common/api-exception.js';
 import type { Prisma, User } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { toResultSummary } from '../results/result-summary.js';
-import { toPublicUser } from './public-user.js';
+import { toMe, toPublicUser } from './public-user.js';
 
 /** Mínimo de intentos para que un par de letras aparezca entre los problemáticos. */
 const MIN_BIGRAM_ATTEMPTS = 5;
@@ -25,13 +29,31 @@ const HISTORY_LIMIT = 100;
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async byId(userId: string): Promise<PublicUser> {
+  async byId(userId: string): Promise<Me> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new ApiException(401, 'UNAUTHORIZED', 'La cuenta ya no existe');
-    return toPublicUser(user);
+    return toMe(user);
   }
 
-  async updateProfile(userId: string, input: UpdateProfileInput): Promise<PublicUser> {
+  private async achievementsOf(userId: string): Promise<{ id: AchievementId; unlockedAt: Date }[]> {
+    const rows = await this.prisma.userAchievement.findMany({
+      where: { userId },
+      orderBy: { unlockedAt: 'asc' },
+    });
+    return rows.flatMap((row) => {
+      const id = ACHIEVEMENT_IDS.find((known) => known === row.achievementId);
+      return id ? [{ id, unlockedAt: row.unlockedAt }] : [];
+    });
+  }
+
+  async updateProfile(userId: string, input: UpdateProfileInput): Promise<Me> {
+    if (input.avatar) {
+      const current = await this.byId(userId);
+      const achievements = (await this.achievementsOf(userId)).map((row) => row.id);
+      if (!isUnlocked(AVATAR_UNLOCKS[input.avatar], current.level, achievements)) {
+        throw new ApiException(403, 'LOCKED', 'Ese avatar todavía no está desbloqueado');
+      }
+    }
     const user = await this.prisma.user.update({
       where: { id: userId },
       data: {
@@ -39,7 +61,7 @@ export class UsersService {
         ...(input.country !== undefined && { country: input.country }),
       },
     });
-    return toPublicUser(user);
+    return toMe(user);
   }
 
   async settings(userId: string): Promise<UserSettings | null> {
@@ -68,7 +90,7 @@ export class UsersService {
   async profile(nickname: string): Promise<Profile> {
     const user = await this.byNickname(nickname);
     const where = { userId: user.id };
-    const [races, recent, best, accuracy, wins, contested] = await Promise.all([
+    const [races, recent, best, accuracy, wins, contested, achievements] = await Promise.all([
       this.prisma.raceResult.count({ where }),
       this.prisma.raceResult.findMany({
         where: { ...where, completed: true },
@@ -86,6 +108,7 @@ export class UsersService {
       }),
       this.prisma.raceResult.count({ where: { ...where, position: 1 } }),
       this.prisma.raceResult.count({ where: { ...where, position: { not: null } } }),
+      this.achievementsOf(user.id),
     ]);
     const averageWpm = recent.length
       ? recent.reduce((sum, r) => sum + r.wpm, 0) / recent.length
@@ -100,6 +123,10 @@ export class UsersService {
         wins,
         winRate: contested ? (wins / contested) * 100 : 0,
       },
+      achievements: achievements.map((row) => ({
+        id: row.id,
+        unlockedAt: row.unlockedAt.toISOString(),
+      })),
     };
   }
 

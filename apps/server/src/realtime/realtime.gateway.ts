@@ -30,7 +30,12 @@ import { TokensService } from '../auth/tokens.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { TokenBucket } from './rate-limiter.js';
 import type { Identity, Room } from './room.js';
-import { RealtimeException, RoomsService, type RoomEvent } from './rooms.service.js';
+import {
+  RealtimeException,
+  resultsForPlayer,
+  RoomsService,
+  type RoomEvent,
+} from './rooms.service.js';
 
 const TICK_MS = 100;
 /** Si un socket supera tantas veces su límite, se desconecta. */
@@ -357,10 +362,10 @@ export class RealtimeGateway
           .then((sockets) => {
             for (const socket of sockets) {
               const identity = (socket.data as Partial<SocketData>).identity;
-              socket.emit(EVENTS.raceResults, {
-                standings: event.standings,
-                savedResultId: (identity && event.saved.get(identity.id)) ?? null,
-              });
+              socket.emit(
+                EVENTS.raceResults,
+                resultsForPlayer(event.standings, event.saved, identity?.id ?? ''),
+              );
             }
           });
         break;

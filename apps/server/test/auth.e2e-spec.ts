@@ -113,14 +113,21 @@ describe('autenticación', () => {
     expect(saved.body).toEqual({ settings });
   });
 
-  it('avatar y país se pueden cambiar', async () => {
+  it('avatar y país se pueden cambiar; los avatares bloqueados piden nivel', async () => {
     const { accessToken } = await registerUser(app);
     const response = await http()
       .patch('/me')
       .set('Authorization', `Bearer ${accessToken}`)
-      .send({ avatar: 'forest', country: 'CO' })
+      .send({ avatar: 'ink', country: 'CO' })
       .expect(200);
-    expect(response.body).toMatchObject({ avatar: 'forest', country: 'CO' });
+    expect(response.body).toMatchObject({ avatar: 'ink', country: 'CO', isAdmin: false });
+
+    const locked = await http()
+      .patch('/me')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ avatar: 'forest' })
+      .expect(403);
+    expect(locked.body).toMatchObject({ code: 'LOCKED' });
   });
 
   it('limita los intentos de login por IP', async () => {

@@ -50,10 +50,12 @@ export {
   elapsedMs,
   liveMetrics,
   missedChars,
+  progressTimeline,
   totalChars,
   wpmFrom,
   type CharStat,
   type LiveMetrics,
+  type ProgressTimeline,
   type RaceMetrics,
   type SecondSample,
 } from './metrics/metrics.js';

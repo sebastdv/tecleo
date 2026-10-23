@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { applyInput, createTypingState, tick } from '../typing/state.js';
 import { typeText } from '../typing/test-helpers.js';
 import type { TypingAction, TypingState } from '../typing/types.js';
-import { analyze, consistency, liveMetrics, wpmFrom } from './metrics.js';
+import { analyze, consistency, liveMetrics, progressTimeline, wpmFrom } from './metrics.js';
 
 /** Aplica una secuencia de acciones en tiempos dados. `'⌫'` es backspace. */
 function play(state: TypingState, steps: readonly [number, string][]): TypingState {
@@ -166,5 +166,29 @@ describe('liveMetrics', () => {
       elapsedMs: 0,
       progress: 0,
     });
+  });
+});
+
+describe('progressTimeline', () => {
+  it('sigue los caracteres correctos tras cada pulsación y marca la llegada', () => {
+    const template = createTypingState({ text: 'ab c', startOn: 'signal' });
+    const timeline = progressTimeline(template, [
+      { t: 100, input: 'a' },
+      { t: 200, input: 'x' },
+      { t: 300, input: '\b' },
+      { t: 400, input: 'b' },
+      { t: 500, input: ' ' },
+      { t: 650, input: 'c' },
+    ]);
+    expect(timeline.totalChars).toBe(4);
+    expect(timeline.finishMs).toBe(650);
+    expect(timeline.samples.map((sample) => sample.correctChars)).toEqual([0, 1, 1, 1, 2, 3, 4]);
+  });
+
+  it('una prueba sin terminar no tiene llegada', () => {
+    const template = createTypingState({ text: 'hola', startOn: 'signal' });
+    expect(progressTimeline(template, [{ t: 50, input: 'h' }]).finishMs).toBe(
+      Number.POSITIVE_INFINITY,
+    );
   });
 });

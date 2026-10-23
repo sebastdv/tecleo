@@ -1,5 +1,11 @@
 import { countCorrectChars, wordMatches } from '../typing/chars.js';
-import { replayKeystrokes } from '../typing/replay.js';
+import {
+  blankRun,
+  keystrokeToAction,
+  replayKeystrokes,
+  type KeystrokeInput,
+} from '../typing/replay.js';
+import { applyInput } from '../typing/state.js';
 import { BACKSPACE, DELETE_WORD, type Keystroke, type TypingState } from '../typing/types.js';
 
 const CHARS_PER_WORD = 5;
@@ -237,4 +243,34 @@ function peakWpm(
     peak = Math.max(peak, wpmFrom(chars, boundaryOf(end) - boundaryOf(begin)));
   }
   return peak;
+}
+
+/** Evolución de una prueba: tras cada pulsación, cuántos caracteres van bien. */
+export interface ProgressTimeline {
+  readonly samples: readonly { readonly t: number; readonly correctChars: number }[];
+  readonly totalChars: number;
+  /** Cuándo se completó el texto; `Infinity` si no se completó. */
+  readonly finishMs: number;
+}
+
+/**
+ * Línea de tiempo de una prueba grabada, con el mismo formato que la de un bot: sirve para
+ * mover a un fantasma en la pista y decidir quién llegó antes.
+ */
+export function progressTimeline(
+  state: TypingState,
+  keystrokes: readonly KeystrokeInput[],
+): ProgressTimeline {
+  let current = blankRun(state);
+  const samples = [{ t: 0, correctChars: 0 }];
+  let finishMs = Number.POSITIVE_INFINITY;
+  for (const keystroke of keystrokes) {
+    current = applyInput(current, keystrokeToAction(keystroke), keystroke.t);
+    samples.push({ t: keystroke.t, correctChars: correctChars(current) });
+    if (current.phase === 'finished') {
+      finishMs = current.finishedAt ?? keystroke.t;
+      break;
+    }
+  }
+  return { samples, totalChars: totalChars(current), finishMs };
 }

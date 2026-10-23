@@ -227,6 +227,8 @@ describe('progresión, rankings, diario, fantasma, calificación y textos', () =
       // La repetición trae las pulsaciones del fantasma.
       const race = await http().get(`/races/${slow.body.raceId}`).expect(200);
       expect(race.body.results[0].keystrokes.deltas.length).toBeGreaterThan(10);
+      const byResult = await http().get(`/races/by-result/${slow.body.id}`).expect(200);
+      expect(byResult.body.id).toBe(slow.body.raceId);
     });
   });
 

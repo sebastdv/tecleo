@@ -26,6 +26,18 @@ const storedConfigSchema = z.object({
 export class RacesController {
   constructor(private readonly prisma: PrismaService) {}
 
+  @Get('by-result/:resultId')
+  @ApiOperation({ summary: 'La carrera a la que pertenece un resultado' })
+  @ApiOkResponse({ schema: zodToOpenApi(raceDetailSchema) })
+  async byResult(@Param('resultId', new ParseUUIDPipe()) resultId: string): Promise<RaceDetail> {
+    const result = await this.prisma.raceResult.findUnique({
+      where: { id: resultId },
+      select: { raceId: true },
+    });
+    if (!result) throw new ApiException(404, 'NOT_FOUND', 'No existe ese resultado');
+    return this.byId(result.raceId);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Carrera con sus resultados y pulsaciones (repeticiones y fantasmas)' })
   @ApiOkResponse({ schema: zodToOpenApi(raceDetailSchema) })

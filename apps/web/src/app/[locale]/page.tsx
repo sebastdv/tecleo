@@ -9,9 +9,9 @@ const MODES = [
   { key: 'bots', href: '/race' },
   { key: 'public', href: '/play' },
   { key: 'private', href: '/room' },
-  { key: 'ghost', href: null },
-  { key: 'daily', href: null },
-  { key: 'targeted', href: null },
+  { key: 'ghost', href: '/leaderboards' },
+  { key: 'daily', href: '/daily' },
+  { key: 'targeted', href: '/targeted' },
 ] as const;
 
 export default function HomePage() {
@@ -34,29 +34,14 @@ export default function HomePage() {
           {MODES.map((mode) => (
             <li key={mode.key} className="flex items-baseline justify-between gap-6 border-t py-5">
               <div className="flex flex-col gap-1">
-                {mode.href ? (
-                  <Link
-                    href={mode.href}
-                    className="font-heading text-lg font-semibold underline-offset-4 hover:underline"
-                  >
-                    {t(`modes.${mode.key}.name`)}
-                  </Link>
-                ) : (
-                  <span className="font-heading text-lg font-semibold">
-                    {t(`modes.${mode.key}.name`)}
-                  </span>
-                )}
+                <Link
+                  href={mode.href}
+                  className="font-heading text-lg font-semibold underline-offset-4 hover:underline"
+                >
+                  {t(`modes.${mode.key}.name`)}
+                </Link>
                 <p className="text-muted-foreground">{t(`modes.${mode.key}.description`)}</p>
               </div>
-              <span
-                className={
-                  mode.href
-                    ? 'shrink-0 text-sm font-medium text-primary'
-                    : 'shrink-0 text-sm text-muted-foreground'
-                }
-              >
-                {mode.href ? t('available') : t('soon')}
-              </span>
             </li>
           ))}
         </ul>

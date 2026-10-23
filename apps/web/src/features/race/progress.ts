@@ -1,10 +1,11 @@
-import type { BotRun } from '@tecleo/engine';
+import type { ProgressTimeline } from '@tecleo/engine';
 
 /**
- * Progreso del bot en `t` interpolando entre pulsaciones, para que en la pista avance de forma
- * continua y no a saltos. Solo es visual: posiciones y resultados usan los valores exactos.
+ * Progreso de un bot (o de una prueba grabada) en `t` interpolando entre pulsaciones, para que
+ * en la pista avance de forma continua y no a saltos. Solo es visual: posiciones y resultados
+ * usan los valores exactos.
  */
-export function interpolatedProgress(run: BotRun, t: number): number {
+export function interpolatedProgress(run: ProgressTimeline, t: number): number {
   const { samples, totalChars } = run;
   if (totalChars === 0 || samples.length === 0) return 0;
   if (t >= run.finishMs) return 1;

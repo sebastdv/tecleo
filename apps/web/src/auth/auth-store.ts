@@ -1,6 +1,6 @@
 'use client';
 
-import type { AuthResponse, PublicUser } from '@tecleo/shared';
+import type { AuthResponse, Me } from '@tecleo/shared';
 import { create } from 'zustand';
 
 export type AuthStatus = 'unknown' | 'guest' | 'authenticated';
@@ -8,11 +8,11 @@ export type AuthStatus = 'unknown' | 'guest' | 'authenticated';
 interface AuthStore {
   /** `unknown` mientras se comprueba la cookie de refresh al cargar. */
   readonly status: AuthStatus;
-  readonly user: PublicUser | null;
+  readonly user: Me | null;
   /** Solo en memoria: nunca en localStorage (un XSS no podría robarlo después de cerrar). */
   readonly accessToken: string | null;
   setSession: (session: AuthResponse) => void;
-  setUser: (user: PublicUser) => void;
+  setUser: (user: Me) => void;
   clear: () => void;
 }
 

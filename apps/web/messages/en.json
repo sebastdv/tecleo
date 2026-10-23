@@ -17,7 +17,8 @@
     "theme": "Theme",
     "account": "Account",
     "profile": "My profile",
-    "logout": "Log out"
+    "logout": "Log out",
+    "admin": "Texts"
   },
   "footer": {
     "credits": "Texts from public domain works taken from <gutenberg>Project Gutenberg</gutenberg>. Word lists from <frequency>FrequencyWords</frequency> (CC BY-SA 4.0).",
@@ -32,8 +33,6 @@
     "tagline": "Type real texts, see your mistakes as you make them, and race against people or bots.",
     "playNow": "Play now",
     "modesTitle": "Game modes",
-    "available": "Available",
-    "soon": "Soon",
     "modes": {
       "practice": {
         "name": "Free practice",
@@ -231,11 +230,9 @@
     "countryNone": "Not set",
     "accountSaved": "Saved.",
     "accountError": "Couldn't save. Try again.",
-    "syncedToAccount": "Changes are saved to your account and apply on all your devices."
-  },
-  "upcoming": {
-    "title": "Not available yet",
-    "practiceCta": "Go practice"
+    "syncedToAccount": "Changes are saved to your account and apply on all your devices.",
+    "unlockLevel": "Level {level}",
+    "unlockAchievement": "\"{name}\" achievement"
   },
   "race": {
     "title": "Race against bots",
@@ -346,7 +343,34 @@
   },
   "leaderboards": {
     "title": "Leaderboards",
-    "description": "The best validated results of the day, the week and all time, by language and mode."
+    "description": "The best validated results of the day, the week and all time, by language and mode.",
+    "period": "Period",
+    "periods": {
+      "day": "Today",
+      "week": "Week",
+      "all": "All time"
+    },
+    "language": "Language",
+    "mode": "Mode",
+    "allModes": "All modes",
+    "rules": "Each person's best. Only complete, validated tests count, without \"ignore accents\" or anti-cheat flags. \"Today\" is the UTC day; \"Week\" is the last 7 days.",
+    "empty": "No results here yet.",
+    "loading": "Loading the leaderboard…",
+    "loadError": "Couldn't load the leaderboard. Check your connection.",
+    "level": "lv. {level}",
+    "replay": "Replay",
+    "ghost": "Ghost",
+    "replayOf": "Watch {nickname}'s replay",
+    "ghostOf": "Race {nickname}'s ghost",
+    "columns": {
+      "rank": "#",
+      "player": "Player",
+      "wpm": "wpm",
+      "accuracy": "Accuracy",
+      "mode": "Mode",
+      "date": "Date",
+      "actions": "Actions"
+    }
   },
   "profile": {
     "title": "{nickname}'s profile",
@@ -393,13 +417,20 @@
       "mode": "Mode",
       "wpm": "wpm",
       "accuracy": "Accuracy",
-      "position": "Place"
+      "position": "Place",
+      "actions": "Actions"
     },
     "positionValue": "{position} of {runners}",
     "flagged": "Flagged by the anti-cheat: doesn't count for leaderboards",
     "loadMore": "Load more",
     "empty": "Play a practice or a race to start your history.",
-    "play": "Play now"
+    "play": "Play now",
+    "levelProgress": "Progress to level {level}",
+    "xpValue": "{xp} XP · {current}/{needed} to level {next}",
+    "achievements": "Achievements ({count}/{total})",
+    "locked": "locked",
+    "replay": "Replay",
+    "ghost": "Ghost"
   },
   "auth": {
     "loginTitle": "Log in",
@@ -457,5 +488,199 @@
     "bots": "Against bots",
     "public": "Public",
     "private": "Private room"
+  },
+  "achievements": {
+    "first-race": {
+      "name": "First test",
+      "description": "Finish your first test."
+    },
+    "races-10": {
+      "name": "Ten tests",
+      "description": "Play 10 tests."
+    },
+    "races-100": {
+      "name": "A hundred tests",
+      "description": "Play 100 tests."
+    },
+    "races-500": {
+      "name": "Five hundred tests",
+      "description": "Play 500 tests."
+    },
+    "wpm-60": {
+      "name": "60 wpm",
+      "description": "Go over 60 words per minute."
+    },
+    "wpm-80": {
+      "name": "80 wpm",
+      "description": "Go over 80 words per minute for the first time."
+    },
+    "wpm-100": {
+      "name": "100 wpm",
+      "description": "Go over 100 words per minute."
+    },
+    "wpm-120": {
+      "name": "120 wpm",
+      "description": "Go over 120 words per minute."
+    },
+    "perfect": {
+      "name": "Perfect test",
+      "description": "Finish a test of at least 15 s with 100% accuracy."
+    },
+    "first-win": {
+      "name": "First win",
+      "description": "Win a race against opponents."
+    },
+    "wins-25": {
+      "name": "Twenty-five wins",
+      "description": "Win 25 races."
+    },
+    "online-first": {
+      "name": "Online",
+      "description": "Finish your first race against other people."
+    },
+    "daily-first": {
+      "name": "Challenge of the day",
+      "description": "Complete a daily challenge."
+    },
+    "daily-7": {
+      "name": "Seven challenges",
+      "description": "Complete 7 daily challenges."
+    },
+    "ghost-first": {
+      "name": "Ghostbuster",
+      "description": "Beat a ghost."
+    },
+    "level-5": {
+      "name": "Level 5",
+      "description": "Reach level 5."
+    },
+    "level-10": {
+      "name": "Level 10",
+      "description": "Reach level 10."
+    }
+  },
+  "insights": {
+    "label": "Your progress",
+    "xpGained": "+{xp} XP",
+    "level": "Level {level}",
+    "leveledUp": "You reached level {level}!",
+    "newAchievements": "{count, plural, one {New achievement} other {# new achievements}}",
+    "newBest": "New personal best! (was {previous} wpm)",
+    "best": "Your best: {best} wpm",
+    "aboveAverage": "{diff} wpm above your average ({average} wpm)",
+    "belowAverage": "{diff} wpm below your average ({average} wpm)",
+    "newTextBest": "New best on this text (was {previous} wpm)",
+    "textBest": "Your best on this text: {best} wpm",
+    "replay": "Watch replay",
+    "textLeaderboard": "Leaderboard for this text",
+    "rateLabel": "Did you like the text?",
+    "like": "Liked it",
+    "dislike": "Didn't like it",
+    "rateSignIn": "<login>Sign in</login> to rate texts."
+  },
+  "textPage": {
+    "title": "Text leaderboard",
+    "loading": "Loading the text…",
+    "notFound": "That text doesn't exist.",
+    "loadError": "Couldn't load the text. Check your connection.",
+    "likes": "{count, plural, one {# like} other {# likes}}",
+    "dislikes": "{count, plural, one {# dislike} other {# dislikes}}",
+    "ranking": "Best results on this text",
+    "raceBest": "Race {nickname}"
+  },
+  "replay": {
+    "title": "Replay",
+    "titleOf": "{nickname}'s replay",
+    "description": "The test exactly as it was typed, keystroke by keystroke.",
+    "loading": "Loading the replay…",
+    "notFound": "That test doesn't exist.",
+    "loadError": "Couldn't load the replay. Check your connection.",
+    "unavailable": "This test has no saved keystrokes.",
+    "play": "Play",
+    "pause": "Pause",
+    "restart": "From the start",
+    "speed": "Speed",
+    "speedValue": "{speed}×",
+    "position": "Replay position",
+    "timeValue": "{current} s of {total} s",
+    "summary": "Result: {wpm} wpm, {accuracy}% accuracy.",
+    "raceGhost": "Race this ghost",
+    "textLeaderboard": "Text leaderboard"
+  },
+  "ghost": {
+    "title": "Ghost race",
+    "titleOf": "Against {nickname}'s ghost",
+    "description": "The same text against their recording: {wpm} wpm. First to finish wins.",
+    "descriptionGeneric": "The same text against a recording. First to finish wins.",
+    "loading": "Getting the ghost ready…",
+    "notFound": "That test doesn't exist.",
+    "loadError": "Couldn't load the ghost. Check your connection.",
+    "unavailable": "This test can't be used as a ghost: it wasn't completed or has no keystrokes.",
+    "anonymous": "Ghost",
+    "attribution": "Ghost: {name}"
+  },
+  "solo": {
+    "you": "You",
+    "ghostTag": "ghost",
+    "ghostWon": "You beat {name}'s ghost!",
+    "ghostLost": "{name}'s ghost finished first.",
+    "again": "Again",
+    "restartShortcut": "Esc starts over",
+    "restart": "Start over"
+  },
+  "daily": {
+    "title": "Daily challenge",
+    "description": "The same text for everyone during the day (UTC), with its own leaderboard. Strict rules, no \"ignore accents\".",
+    "date": "Challenge for {date}",
+    "language": "Challenge language",
+    "loading": "Loading the challenge…",
+    "loadError": "Couldn't load the challenge. Check your connection.",
+    "ranking": "Today's leaderboard"
+  },
+  "targeted": {
+    "title": "Targeted practice",
+    "description": "Exercises built from the keys and letter pairs where you make the most mistakes.",
+    "loading": "Looking for your weak spots…",
+    "notEnough": "There isn't enough data yet to know where you struggle. Do a few tests and come back.",
+    "goPractice": "Go practice",
+    "focus": "This time you practice",
+    "attribution": "Words picked from your mistakes",
+    "next": "Another exercise"
+  },
+  "admin": {
+    "title": "Texts",
+    "description": "Add public-domain or original texts and deactivate the ones that shouldn't appear.",
+    "loading": "Checking your session…",
+    "forbidden": "This section is for administrators only.",
+    "newText": "Add a text",
+    "licenseNote": "Public domain or texts written for Tecleo only: no song lyrics or copyrighted books.",
+    "content": "Text",
+    "language": "Language",
+    "type": "Type",
+    "types": {
+      "quote": "Quote",
+      "code": "Code"
+    },
+    "author": "Author",
+    "source": "Work or source",
+    "add": "Add",
+    "added": "Text added.",
+    "addError": "Couldn't add it. Make sure it has at least 20 characters.",
+    "list": "Texts ({total})",
+    "search": "Search text or author",
+    "allLanguages": "All languages",
+    "allTypes": "All types",
+    "state": "State",
+    "allStates": "Active and inactive",
+    "activeOnly": "Active only",
+    "inactiveOnly": "Inactive only",
+    "ratings": "👍 / 👎",
+    "ratingValue": "{likes} / {dislikes}",
+    "active": "Active",
+    "toggle": "Activate or deactivate {id}",
+    "loadError": "Couldn't load the texts.",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page} of {pages}"
   }
 }

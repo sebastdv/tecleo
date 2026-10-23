@@ -2,14 +2,17 @@
 
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import {
+  ACHIEVEMENT_IDS,
   LANGUAGES,
+  levelProgress,
   profileSchema,
   profileStatsSchema,
   racesPageSchema,
   type Language,
+  type Profile,
   type ResultSummary,
 } from '@tecleo/shared';
-import { Flag } from 'lucide-react';
+import { Award, Flag, Lock } from 'lucide-react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { useState, type ReactNode } from 'react';
 import {
@@ -35,6 +38,8 @@ import { Link } from '@/i18n/navigation';
 import { ApiError, fetchApi } from '@/lib/api';
 import { useSettings } from '@/settings/settings-store';
 import { THEME_TOKENS } from '@/theme/themes';
+
+import { cn } from '@/lib/utils';
 
 import { KeyboardHeatmap } from './keyboard-heatmap';
 
@@ -129,6 +134,76 @@ function HistoryChart({ history }: { history: { createdAt: string; wpm: number }
   );
 }
 
+/** Nivel y XP: cuánto lleva dentro del nivel y cuánto falta para el siguiente. */
+function LevelBar({ xp }: { xp: number }) {
+  const t = useTranslations('profile');
+  const { level, current, needed } = levelProgress(xp);
+  return (
+    <div className="flex max-w-sm flex-col gap-1">
+      <div
+        role="progressbar"
+        aria-label={t('levelProgress', { level: level + 1 })}
+        aria-valuemin={0}
+        aria-valuemax={needed}
+        aria-valuenow={current}
+        className="h-2 w-full overflow-hidden rounded-full bg-muted"
+      >
+        <div
+          className="h-full rounded-full bg-primary"
+          style={{ width: `${(current / needed) * 100}%` }}
+        />
+      </div>
+      <p className="tabular text-sm text-muted-foreground">
+        {t('xpValue', { xp, current, needed, next: level + 1 })}
+      </p>
+    </div>
+  );
+}
+
+/** Todos los logros: los conseguidos con su fecha; los demás, bloqueados con lo que piden. */
+function Achievements({ unlocked }: { unlocked: Profile['achievements'] }) {
+  const t = useTranslations('profile');
+  const tAchievements = useTranslations('achievements');
+  const format = useFormatter();
+  const dates = new Map(unlocked.map((achievement) => [achievement.id, achievement.unlockedAt]));
+  return (
+    <Section title={t('achievements', { count: unlocked.length, total: ACHIEVEMENT_IDS.length })}>
+      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {ACHIEVEMENT_IDS.map((id) => {
+          const date = dates.get(id);
+          return (
+            <li
+              key={id}
+              className={cn(
+                'flex items-start gap-3 rounded-lg border p-3',
+                date ? 'bg-card' : 'border-dashed text-muted-foreground',
+              )}
+            >
+              {date ? (
+                <Award aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-primary" />
+              ) : (
+                <Lock aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
+              )}
+              <div className="flex flex-col">
+                <span className={cn('font-medium', date && 'text-foreground')}>
+                  {tAchievements(`${id}.name`)}
+                  {!date && <span className="sr-only"> ({t('locked')})</span>}
+                </span>
+                <span className="text-sm">{tAchievements(`${id}.description`)}</span>
+                {date && (
+                  <span className="text-xs text-muted-foreground">
+                    {format.dateTime(new Date(date), { dateStyle: 'medium' })}
+                  </span>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </Section>
+  );
+}
+
 function History({ nickname }: { nickname: string }) {
   const t = useTranslations('profile');
   const tLanguages = useTranslations('settings.languages');
@@ -195,7 +270,7 @@ function History({ nickname }: { nickname: string }) {
         <p className="text-muted-foreground">{t('historyEmpty')}</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[32rem] text-left text-sm">
+          <table className="w-full min-w-[40rem] text-left text-sm">
             <thead className="text-muted-foreground">
               <tr className="border-b">
                 <th scope="col" className="py-2 font-normal">
@@ -212,6 +287,9 @@ function History({ nickname }: { nickname: string }) {
                 </th>
                 <th scope="col" className="py-2 text-right font-normal">
                   {t('columns.position')}
+                </th>
+                <th scope="col" className="py-2 text-right font-normal">
+                  <span className="sr-only">{t('columns.actions')}</span>
                 </th>
               </tr>
             </thead>
@@ -240,6 +318,22 @@ function History({ nickname }: { nickname: string }) {
                     {item.position === null
                       ? '—'
                       : t('positionValue', { position: item.position, runners: item.runners })}
+                  </td>
+                  <td className="py-2 pl-4 text-right whitespace-nowrap">
+                    <Link
+                      href={`/replay/${item.id}`}
+                      className="font-medium text-primary underline-offset-4 hover:underline"
+                    >
+                      {t('replay')}
+                    </Link>
+                    {item.completed && (
+                      <Link
+                        href={`/ghost/${item.id}`}
+                        className="ml-3 font-medium text-primary underline-offset-4 hover:underline"
+                      >
+                        {t('ghost')}
+                      </Link>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -308,8 +402,11 @@ export function ProfileScreen({ nickname }: { nickname: string }) {
               date: format.dateTime(new Date(user.createdAt), { dateStyle: 'long' }),
             })}
           </p>
+          <LevelBar xp={user.xp} />
         </div>
       </header>
+
+      <Achievements unlocked={user.achievements} />
 
       {user.stats.races === 0 ? (
         <div className="flex flex-col items-start gap-4">

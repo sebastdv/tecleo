@@ -15,6 +15,7 @@ import { Countdown } from '../race/countdown';
 import { Podium } from '../race/podium';
 import { interpolatedProgress } from '../race/progress';
 import { Track, type TrackLane } from '../race/track';
+import { ResultInsights } from '../results/result-insights';
 import { ResultsPanel } from '../results/results-panel';
 import { TypingArea } from '../typing/typing-area';
 import { useFocusMode } from '../typing/use-focus-mode';
@@ -259,7 +260,17 @@ function RoomResults({
             )
           }
           ignoreAccents={false}
-          saveNote={<SaveNote saved={results.savedResultId !== null} />}
+          saveNote={
+            <>
+              <SaveNote saved={results.savedResultId !== null} />
+              <ResultInsights
+                resultId={results.savedResultId}
+                progress={results.progress}
+                wpm={metrics.wpm}
+                textId={room.race?.textId ?? null}
+              />
+            </>
+          }
           nextLabel={isPrivate ? t('rematch') : tPlay('another')}
           repeatLabel={tRoom('leave')}
           onNext={onAgain}

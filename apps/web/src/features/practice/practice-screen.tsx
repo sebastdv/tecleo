@@ -11,6 +11,7 @@ import { useSettings, useSettingsStore } from '@/settings/settings-store';
 import { useSaveResult } from '@/results/save-result';
 import { SaveStatusNote } from '@/results/save-status';
 
+import { ResultInsights } from '../results/result-insights';
 import { ResultsPanel } from '../results/results-panel';
 import { LiveStats } from '../typing/live-stats';
 import { TypingArea } from '../typing/typing-area';
@@ -109,7 +110,7 @@ export function PracticeScreen() {
       playedAt: new Date().toISOString(),
     };
   }, [typing, source, metrics, config.mode, settings.textLanguage]);
-  const saveStatus = useSaveResult(round, payload);
+  const saved = useSaveResult(round, payload);
 
   return (
     <div className="flex flex-col gap-10">
@@ -137,7 +138,17 @@ export function PracticeScreen() {
           metrics={metrics}
           attribution={<Attribution source={source} />}
           ignoreAccents={typing.rules.ignoreAccents}
-          saveNote={<SaveStatusNote status={saveStatus} />}
+          saveNote={
+            <>
+              <SaveStatusNote status={saved.status} />
+              <ResultInsights
+                resultId={saved.summary?.id ?? null}
+                progress={saved.summary?.progress ?? null}
+                wpm={metrics.wpm}
+                textId={source.quote?.id ?? source.snippet?.id ?? null}
+              />
+            </>
+          }
           onNext={() => {
             void next();
           }}

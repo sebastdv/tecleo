@@ -34,6 +34,7 @@ import type { Socket } from 'socket.io-client';
 import { z } from 'zod';
 import { create } from 'zustand';
 
+import { useAuthStore } from '@/auth/auth-store';
 import { connectRealtime, getSocket, selfId, serverToLocal } from '@/lib/realtime';
 
 import { pushSample, type ProgressSample } from './snapshots';
@@ -328,6 +329,10 @@ export const useRoomStore = create<RoomStore>()((set, get) => {
       const { typing } = get();
       // Si se acabó el tiempo antes de terminar, la carrera local se cierra igual.
       const closed = typing?.phase === 'running' ? tick(typing, Number.POSITIVE_INFINITY) : typing;
+      // La XP y el nivel nuevos se ven en la sesión sin volver a pedirla.
+      const { progress } = results.data;
+      const { user, setUser } = useAuthStore.getState();
+      if (user && progress) setUser({ ...user, xp: progress.xp, level: progress.level });
       set({
         results: results.data,
         typing: closed,

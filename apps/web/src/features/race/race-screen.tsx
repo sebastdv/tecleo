@@ -11,6 +11,7 @@ import { useSettings, useSettingsStore } from '@/settings/settings-store';
 import { useSaveResult } from '@/results/save-result';
 import { SaveStatusNote } from '@/results/save-status';
 
+import { ResultInsights } from '../results/result-insights';
 import { ResultsPanel } from '../results/results-panel';
 import { TypingArea } from '../typing/typing-area';
 import { useFocusMode } from '../typing/use-focus-mode';
@@ -111,7 +112,7 @@ export function RaceScreen() {
       playedAt: new Date().toISOString(),
     };
   }, [phase, typing, quote, metrics, seed, bots]);
-  const saveStatus = useSaveResult(round, payload);
+  const saved = useSaveResult(round, payload);
   const positions = useMemo(
     () => new Map(outcomes.map((outcome) => [outcome.id, outcome.position])),
     [outcomes],
@@ -151,7 +152,17 @@ export function RaceScreen() {
               )
             }
             ignoreAccents={typing.rules.ignoreAccents}
-            saveNote={<SaveStatusNote status={saveStatus} />}
+            saveNote={
+              <>
+                <SaveStatusNote status={saved.status} />
+                <ResultInsights
+                  resultId={saved.summary?.id ?? null}
+                  progress={saved.summary?.progress ?? null}
+                  wpm={metrics.wpm}
+                  textId={quote?.id ?? null}
+                />
+              </>
+            }
             nextLabel={t('another')}
             repeatLabel={t('rematch')}
             onNext={() => {

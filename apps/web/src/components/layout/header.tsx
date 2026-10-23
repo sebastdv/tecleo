@@ -1,7 +1,7 @@
 'use client';
 
 import { LANGUAGES, THEMES, type Language, type ThemeId } from '@tecleo/shared';
-import { Languages, LogOut, Menu, Palette, Settings, User } from 'lucide-react';
+import { FileText, Languages, LogOut, Menu, Palette, Settings, User } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Suspense } from 'react';
 
@@ -222,6 +222,11 @@ function AccountMenu({ mobile = false }: { mobile?: boolean }) {
         <Button variant="outline" asChild>
           <Link href={`/profile/${user.nickname}`}>{t('profile')}</Link>
         </Button>
+        {user.isAdmin && (
+          <Button variant="outline" asChild>
+            <Link href="/admin">{t('admin')}</Link>
+          </Button>
+        )}
         <Button variant="ghost" onClick={() => void logout()}>
           {t('logout')}
         </Button>
@@ -253,6 +258,14 @@ function AccountMenu({ mobile = false }: { mobile?: boolean }) {
             {t('settings')}
           </Link>
         </DropdownMenuItem>
+        {user.isAdmin && (
+          <DropdownMenuItem asChild>
+            <Link href="/admin">
+              <FileText />
+              {t('admin')}
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => void logout()}>
           <LogOut />

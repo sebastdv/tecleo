@@ -15,7 +15,8 @@ interface ResultsPanelProps {
   readonly attribution: ReactNode;
   readonly ignoreAccents: boolean;
   readonly onNext: () => void;
-  readonly onRepeat: () => void;
+  /** Sin él no se muestra el segundo botón. */
+  readonly onRepeat?: () => void;
   /** Dónde quedó guardado el resultado (se muestra bajo la atribución). */
   readonly saveNote?: ReactNode;
   /** Textos de los botones; por defecto los de la práctica. */
@@ -126,9 +127,11 @@ export function ResultsPanel({
         <Button ref={nextRef} onClick={onNext} className="h-10 px-5">
           {nextLabel ?? t('next')}
         </Button>
-        <Button variant="outline" onClick={onRepeat} className="h-10 px-5">
-          {repeatLabel ?? t('repeat')}
-        </Button>
+        {onRepeat && (
+          <Button variant="outline" onClick={onRepeat} className="h-10 px-5">
+            {repeatLabel ?? t('repeat')}
+          </Button>
+        )}
       </div>
     </section>
   );

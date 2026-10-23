@@ -17,7 +17,8 @@
     "theme": "Tema",
     "account": "Cuenta",
     "profile": "Mi perfil",
-    "logout": "Salir"
+    "logout": "Salir",
+    "admin": "Textos"
   },
   "footer": {
     "credits": "Textos de obras de dominio público tomadas de <gutenberg>Project Gutenberg</gutenberg>. Listas de palabras de <frequency>FrequencyWords</frequency> (CC BY-SA 4.0).",
@@ -32,8 +33,6 @@
     "tagline": "Escribe textos de verdad, mira tus errores en vivo y compite contra personas o bots.",
     "playNow": "Jugar ahora",
     "modesTitle": "Modos de juego",
-    "available": "Disponible",
-    "soon": "Pronto",
     "modes": {
       "practice": {
         "name": "Práctica libre",
@@ -231,11 +230,9 @@
     "countryNone": "Sin indicar",
     "accountSaved": "Guardado.",
     "accountError": "No se pudo guardar. Vuelve a intentarlo.",
-    "syncedToAccount": "Los cambios se guardan en tu cuenta y se aplican en todos tus dispositivos."
-  },
-  "upcoming": {
-    "title": "Todavía no está disponible",
-    "practiceCta": "Ir a practicar"
+    "syncedToAccount": "Los cambios se guardan en tu cuenta y se aplican en todos tus dispositivos.",
+    "unlockLevel": "Nivel {level}",
+    "unlockAchievement": "Logro «{name}»"
   },
   "race": {
     "title": "Carrera contra bots",
@@ -346,7 +343,34 @@
   },
   "leaderboards": {
     "title": "Rankings",
-    "description": "Los mejores resultados validados del día, la semana y de siempre, por idioma y modo."
+    "description": "Los mejores resultados validados del día, la semana y de siempre, por idioma y modo.",
+    "period": "Periodo",
+    "periods": {
+      "day": "Hoy",
+      "week": "Semana",
+      "all": "Histórico"
+    },
+    "language": "Idioma",
+    "mode": "Modo",
+    "allModes": "Todos los modos",
+    "rules": "La mejor marca de cada persona. Solo cuentan pruebas completas y validadas, sin «ignorar tildes» ni marcas del antitrampa. «Hoy» es el día UTC; «Semana», los últimos 7 días.",
+    "empty": "Todavía no hay resultados aquí.",
+    "loading": "Cargando el ranking…",
+    "loadError": "No se pudo cargar el ranking. Revisa tu conexión.",
+    "level": "nv. {level}",
+    "replay": "Repetición",
+    "ghost": "Fantasma",
+    "replayOf": "Ver la repetición de {nickname}",
+    "ghostOf": "Correr contra el fantasma de {nickname}",
+    "columns": {
+      "rank": "#",
+      "player": "Jugador",
+      "wpm": "ppm",
+      "accuracy": "Precisión",
+      "mode": "Modo",
+      "date": "Fecha",
+      "actions": "Acciones"
+    }
   },
   "profile": {
     "title": "Perfil de {nickname}",
@@ -393,13 +417,20 @@
       "mode": "Modo",
       "wpm": "ppm",
       "accuracy": "Precisión",
-      "position": "Puesto"
+      "position": "Puesto",
+      "actions": "Acciones"
     },
     "positionValue": "{position} de {runners}",
     "flagged": "Marcado por el antitrampa: no cuenta para rankings",
     "loadMore": "Ver más",
     "empty": "Juega una práctica o una carrera para empezar tu historial.",
-    "play": "Jugar ahora"
+    "play": "Jugar ahora",
+    "levelProgress": "Progreso hacia el nivel {level}",
+    "xpValue": "{xp} XP · {current}/{needed} para el nivel {next}",
+    "achievements": "Logros ({count}/{total})",
+    "locked": "bloqueado",
+    "replay": "Repetición",
+    "ghost": "Fantasma"
   },
   "auth": {
     "loginTitle": "Entrar",
@@ -457,5 +488,199 @@
     "bots": "Contra bots",
     "public": "Pública",
     "private": "Sala privada"
+  },
+  "achievements": {
+    "first-race": {
+      "name": "Primera prueba",
+      "description": "Termina tu primera prueba."
+    },
+    "races-10": {
+      "name": "Diez pruebas",
+      "description": "Juega 10 pruebas."
+    },
+    "races-100": {
+      "name": "Cien pruebas",
+      "description": "Juega 100 pruebas."
+    },
+    "races-500": {
+      "name": "Quinientas pruebas",
+      "description": "Juega 500 pruebas."
+    },
+    "wpm-60": {
+      "name": "60 ppm",
+      "description": "Supera las 60 palabras por minuto."
+    },
+    "wpm-80": {
+      "name": "80 ppm",
+      "description": "Supera las 80 palabras por minuto por primera vez."
+    },
+    "wpm-100": {
+      "name": "100 ppm",
+      "description": "Supera las 100 palabras por minuto."
+    },
+    "wpm-120": {
+      "name": "120 ppm",
+      "description": "Supera las 120 palabras por minuto."
+    },
+    "perfect": {
+      "name": "Prueba perfecta",
+      "description": "Termina una prueba de al menos 15 s con 100 % de precisión."
+    },
+    "first-win": {
+      "name": "Primera victoria",
+      "description": "Gana una carrera con rivales."
+    },
+    "wins-25": {
+      "name": "Veinticinco victorias",
+      "description": "Gana 25 carreras."
+    },
+    "online-first": {
+      "name": "En línea",
+      "description": "Termina tu primera carrera contra otras personas."
+    },
+    "daily-first": {
+      "name": "Desafío del día",
+      "description": "Completa un desafío diario."
+    },
+    "daily-7": {
+      "name": "Siete desafíos",
+      "description": "Completa 7 desafíos diarios."
+    },
+    "ghost-first": {
+      "name": "Cazafantasmas",
+      "description": "Gánale a un fantasma."
+    },
+    "level-5": {
+      "name": "Nivel 5",
+      "description": "Llega al nivel 5."
+    },
+    "level-10": {
+      "name": "Nivel 10",
+      "description": "Llega al nivel 10."
+    }
+  },
+  "insights": {
+    "label": "Tu progreso",
+    "xpGained": "+{xp} XP",
+    "level": "Nivel {level}",
+    "leveledUp": "¡Subiste al nivel {level}!",
+    "newAchievements": "{count, plural, one {Logro nuevo} other {# logros nuevos}}",
+    "newBest": "¡Nuevo récord personal! (antes {previous} ppm)",
+    "best": "Tu récord: {best} ppm",
+    "aboveAverage": "{diff} ppm sobre tu promedio ({average} ppm)",
+    "belowAverage": "{diff} ppm bajo tu promedio ({average} ppm)",
+    "newTextBest": "Nuevo récord en este texto (antes {previous} ppm)",
+    "textBest": "Tu récord en este texto: {best} ppm",
+    "replay": "Ver repetición",
+    "textLeaderboard": "Ranking de este texto",
+    "rateLabel": "¿Te gustó el texto?",
+    "like": "Me gustó",
+    "dislike": "No me gustó",
+    "rateSignIn": "<login>Entra</login> para calificar textos."
+  },
+  "textPage": {
+    "title": "Ranking del texto",
+    "loading": "Cargando el texto…",
+    "notFound": "No existe ese texto.",
+    "loadError": "No se pudo cargar el texto. Revisa tu conexión.",
+    "likes": "{count, plural, one {# le gustó} other {# les gustó}}",
+    "dislikes": "{count, plural, one {# no le gustó} other {# no les gustó}}",
+    "ranking": "Mejores marcas en este texto",
+    "raceBest": "Correr contra {nickname}"
+  },
+  "replay": {
+    "title": "Repetición",
+    "titleOf": "Repetición de {nickname}",
+    "description": "La prueba tal como se escribió, pulsación por pulsación.",
+    "loading": "Cargando la repetición…",
+    "notFound": "No existe esa prueba.",
+    "loadError": "No se pudo cargar la repetición. Revisa tu conexión.",
+    "unavailable": "Esta prueba no tiene pulsaciones guardadas.",
+    "play": "Reproducir",
+    "pause": "Pausa",
+    "restart": "Desde el principio",
+    "speed": "Velocidad",
+    "speedValue": "{speed}×",
+    "position": "Momento de la repetición",
+    "timeValue": "{current} s de {total} s",
+    "summary": "Resultado: {wpm} ppm, {accuracy} % de precisión.",
+    "raceGhost": "Correr contra este fantasma",
+    "textLeaderboard": "Ranking del texto"
+  },
+  "ghost": {
+    "title": "Carrera fantasma",
+    "titleOf": "Contra el fantasma de {nickname}",
+    "description": "El mismo texto contra su grabación: {wpm} ppm. Gana quien llegue antes.",
+    "descriptionGeneric": "El mismo texto contra una grabación. Gana quien llegue antes.",
+    "loading": "Preparando el fantasma…",
+    "notFound": "No existe esa prueba.",
+    "loadError": "No se pudo cargar el fantasma. Revisa tu conexión.",
+    "unavailable": "Esta prueba no se puede usar como fantasma: no se completó o no tiene pulsaciones.",
+    "anonymous": "Fantasma",
+    "attribution": "Fantasma: {name}"
+  },
+  "solo": {
+    "you": "Tú",
+    "ghostTag": "fantasma",
+    "ghostWon": "¡Le ganaste al fantasma de {name}!",
+    "ghostLost": "El fantasma de {name} llegó antes.",
+    "again": "Otra vez",
+    "restartShortcut": "Esc empieza de nuevo",
+    "restart": "Empezar de nuevo"
+  },
+  "daily": {
+    "title": "Desafío diario",
+    "description": "El mismo texto para todos durante el día (UTC), con su propio ranking. Reglas estrictas, sin «ignorar tildes».",
+    "date": "Desafío del {date}",
+    "language": "Idioma del desafío",
+    "loading": "Cargando el desafío…",
+    "loadError": "No se pudo cargar el desafío. Revisa tu conexión.",
+    "ranking": "Ranking de hoy"
+  },
+  "targeted": {
+    "title": "Práctica dirigida",
+    "description": "Ejercicios armados con las teclas y pares de letras donde más fallas.",
+    "loading": "Buscando tus puntos débiles…",
+    "notEnough": "Todavía no hay suficientes datos para saber dónde fallas. Haz unas cuantas pruebas y vuelve.",
+    "goPractice": "Ir a practicar",
+    "focus": "Esta vez practicas",
+    "attribution": "Palabras elegidas por tus errores",
+    "next": "Otro ejercicio"
+  },
+  "admin": {
+    "title": "Textos",
+    "description": "Agrega textos de dominio público u originales y desactiva los que no deban salir.",
+    "loading": "Comprobando la sesión…",
+    "forbidden": "Esta sección es solo para administradores.",
+    "newText": "Agregar un texto",
+    "licenseNote": "Solo dominio público o textos escritos para Tecleo: nada de letras de canciones ni libros con derechos.",
+    "content": "Texto",
+    "language": "Idioma",
+    "type": "Tipo",
+    "types": {
+      "quote": "Cita",
+      "code": "Código"
+    },
+    "author": "Autor",
+    "source": "Obra o fuente",
+    "add": "Agregar",
+    "added": "Texto agregado.",
+    "addError": "No se pudo agregar. Revisa que tenga al menos 20 caracteres.",
+    "list": "Textos ({total})",
+    "search": "Buscar en el texto o el autor",
+    "allLanguages": "Todos los idiomas",
+    "allTypes": "Todos los tipos",
+    "state": "Estado",
+    "allStates": "Activos e inactivos",
+    "activeOnly": "Solo activos",
+    "inactiveOnly": "Solo inactivos",
+    "ratings": "👍 / 👎",
+    "ratingValue": "{likes} / {dislikes}",
+    "active": "Activo",
+    "toggle": "Activar o desactivar {id}",
+    "loadError": "No se pudieron cargar los textos.",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "page": "Página {page} de {pages}"
   }
 }

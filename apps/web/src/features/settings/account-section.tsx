@@ -1,6 +1,16 @@
 'use client';
 
-import { AVATARS, publicUserSchema, type AvatarId, type UpdateProfileInput } from '@tecleo/shared';
+import { useQuery } from '@tanstack/react-query';
+import {
+  AVATAR_UNLOCKS,
+  AVATARS,
+  isUnlocked,
+  meSchema,
+  profileSchema,
+  type AvatarId,
+  type UpdateProfileInput,
+} from '@tecleo/shared';
+import { Lock } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useId, useMemo, useState } from 'react';
 
@@ -16,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { fetchApi } from '@/lib/api';
+import { cn } from '@/lib/utils';
 
 /** Países hispanohablantes y anglohablantes primero; el resto se puede sumar sin cambiar la API. */
 const COUNTRIES = [
@@ -62,6 +73,14 @@ export function AccountSection() {
   const [message, setMessage] = useState<'accountSaved' | 'accountError' | null>(null);
   const avatarLabelId = useId();
   const countryId = useId();
+  const tAchievements = useTranslations('achievements');
+  // Los logros deciden qué avatares están desbloqueados.
+  const profile = useQuery({
+    queryKey: ['profile', user?.nickname],
+    queryFn: () => fetchApi(`/users/${encodeURIComponent(user?.nickname ?? '')}`, profileSchema),
+    enabled: user !== null,
+  });
+  const achievements = profile.data?.achievements.map((achievement) => achievement.id) ?? [];
 
   const countries = useMemo(() => {
     const names = new Intl.DisplayNames([locale], { type: 'region' });
@@ -74,9 +93,7 @@ export function AccountSection() {
 
   async function save(patch: UpdateProfileInput) {
     try {
-      setUser(
-        await fetchApi('/me', publicUserSchema, { method: 'PATCH', body: patch, auth: true }),
-      );
+      setUser(await fetchApi('/me', meSchema, { method: 'PATCH', body: patch, auth: true }));
       setMessage('accountSaved');
     } catch {
       setMessage('accountError');
@@ -100,16 +117,45 @@ export function AccountSection() {
           onValueChange={(avatar) => void save({ avatar: avatar as AvatarId })}
           className="flex flex-wrap gap-3"
         >
-          {AVATARS.map((avatar) => (
-            <label
-              key={avatar}
-              className="flex cursor-pointer items-center gap-2 rounded-lg border p-2 pr-3 has-data-[state=checked]:border-primary"
-            >
-              <RadioGroupItem value={avatar} />
-              <TypeAvatar nickname={user.nickname} avatar={avatar} size="sm" />
-              <span className="text-sm">{t(`avatars.${avatar}`)}</span>
-            </label>
-          ))}
+          {AVATARS.map((avatar) => {
+            const unlock = AVATAR_UNLOCKS[avatar];
+            const unlocked = isUnlocked(unlock, user.level, achievements);
+            const hintId = `${avatarLabelId}-${avatar}`;
+            return (
+              <label
+                key={avatar}
+                className={cn(
+                  'flex items-center gap-2 rounded-lg border p-2 pr-3 has-data-[state=checked]:border-primary',
+                  unlocked ? 'cursor-pointer' : 'cursor-not-allowed opacity-70',
+                )}
+              >
+                <RadioGroupItem
+                  value={avatar}
+                  disabled={!unlocked}
+                  aria-describedby={unlocked ? undefined : hintId}
+                />
+                <TypeAvatar nickname={user.nickname} avatar={avatar} size="sm" />
+                <span className="flex flex-col text-sm">
+                  {t(`avatars.${avatar}`)}
+                  {!unlocked && (
+                    <span
+                      id={hintId}
+                      className="flex items-center gap-1 text-xs text-muted-foreground"
+                    >
+                      <Lock aria-hidden="true" className="size-3" />
+                      {unlock.kind === 'level'
+                        ? t('unlockLevel', { level: unlock.level })
+                        : unlock.kind === 'achievement'
+                          ? t('unlockAchievement', {
+                              name: tAchievements(`${unlock.achievement}.name`),
+                            })
+                          : null}
+                    </span>
+                  )}
+                </span>
+              </label>
+            );
+          })}
         </RadioGroup>
       </div>
       <div className="flex max-w-xs flex-col gap-2">

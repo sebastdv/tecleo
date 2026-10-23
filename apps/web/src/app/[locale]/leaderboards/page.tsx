@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import { useTranslations } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 
-import { Upcoming } from '@/components/upcoming';
+import { PageContainer } from '@/components/layout/page-container';
+import { PageHeader } from '@/components/layout/page-header';
+import { LeaderboardsScreen } from '@/features/leaderboards/leaderboards-screen';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('leaderboards');
@@ -11,5 +13,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function LeaderboardsPage() {
   const t = useTranslations('leaderboards');
-  return <Upcoming title={t('title')} description={t('description')} />;
+  return (
+    <PageContainer className="max-w-5xl">
+      <PageHeader title={t('title')} description={t('description')} />
+      <LeaderboardsScreen />
+    </PageContainer>
+  );
 }

@@ -368,3 +368,56 @@ Con cuenta, el resultado se guarda en el perfil igual que el de una carrera loca
 ### Nombre de invitado
 
 Se elige en la pantalla de salas privadas y se recuerda en el navegador. En la carrera pública se usa el guardado, o uno al azar («Invitado XXXX»).
+
+## Fase 6
+
+### XP y niveles
+
+La XP de una prueba sale de los caracteres bien escritos, ponderados por la velocidad y, al cuadrado, por la precisión (`raceXp` en `@tecleo/shared`). Con rivales suma 4 por cada uno que quedó detrás y 10 por ganar. Una prueba incompleta vale la mitad; una marcada, nada; hay un tope de 500 por prueba.
+
+El nivel n pide 50·n·(n−1) de XP en total: 100 para el 2, 300 para el 3, 4 500 para el 10. La XP se guarda en cada `RaceResult` (columna `xp`) y la suma, en `User`.
+
+### Logros en código, no en la base
+
+El catálogo de logros (`ACHIEVEMENT_RULES`) vive en `@tecleo/shared`: es una tabla de umbrales sobre estadísticas que el servidor cuenta en una sola consulta. En la base solo está `UserAchievement` (quién consiguió qué y cuándo). Agregar un logro es agregar una línea y sus textos; no hace falta migrar.
+
+Se evalúan al guardar cada resultado, dentro de la misma transacción, y solo cuentan pruebas sin marcar. «Prueba perfecta» pide al menos 15 s, para que una prueba de tres palabras no alcance.
+
+### Desbloqueos: avatares sí, temas no
+
+Los avatares se desbloquean por nivel (Bosque en el 3, Ciruela en el 6) o por logro (Cinta con «80 ppm»); el servidor lo exige al cambiarlo (`403 LOCKED`). Los temas siguen libres: son una preferencia de lectura y de accesibilidad, y los invitados también los usan.
+
+### Rankings
+
+- La mejor marca de cada persona, con `DISTINCT ON` en Postgres. Solo resultados validados, completos, sin marcar y sin «ignorar tildes».
+- «Hoy» es el día UTC; «Semana», los últimos 7 días (móviles, para que el lunes no amanezca vacío); «Histórico», todo.
+- Filtros por idioma y por modo (o todos). Los bots no aparecen: solo personas con cuenta.
+
+### Desafío diario
+
+- Un texto por idioma y día UTC. Se elige la primera vez que alguien lo pide, de forma reproducible (semilla = fecha + idioma) entre las citas activas de longitud media, y se guarda en `DailyChallenge`.
+- Se juega como práctica (el tiempo corre desde la primera tecla) con reglas de carrera: estricto y sin ignorar tildes.
+- El servidor acepta el resultado si el texto es el desafío de hoy o de ayer (quien empezó antes de medianoche). Si no, responde `422 NOT_DAILY`.
+
+### Carrera fantasma y repeticiones
+
+- Se enlazan por id de resultado: `/replay/:resultId` y `/ghost/:resultId` (el servidor da la carrera con `GET /races/by-result/:id`).
+- El fantasma se mueve con la línea de tiempo de sus pulsaciones (`progressTimeline` del motor), igual que un bot.
+- Al guardar, el servidor vuelve a medir al fantasma reproduciendo sus pulsaciones (no confía en lo guardado ni en el cliente) y decide quién ganó.
+- Se puede correr contra cualquier resultado completo: el propio desde el historial, el de otra persona desde los rankings o la repetición.
+
+### Calificar textos
+
+👍/👎 con cuenta (sin cuenta, la pantalla invita a entrar). Una calificación por persona y texto en `TextRating`. Los totales de `Text` se recuentan en la misma transacción, así calificar dos veces no los infla.
+
+### Práctica dirigida
+
+- Los puntos débiles son hasta 6 letras y 6 pares de letras con más errores por intento: al menos 5 intentos, suavizado para que una tecla rara no domine.
+- Con cuenta salen de `KeyStat`; sin cuenta, de reproducir con el motor las pruebas guardadas en el navegador.
+- El ejercicio son 30 palabras de las 5 000 más comunes, elegidas al azar con probabilidad proporcional a cuánto practican esos puntos. Si casi ninguna palabra los contiene, la pantalla pide hacer unas pruebas antes.
+
+### Panel de textos
+
+- El rol de administrador es una columna de `User` y se da con `pnpm --filter @tecleo/server admin:grant <correo>`, sin interfaz para darlo. El servidor lo lee de la base en cada petición, no del token.
+- Los textos nuevos reciben dificultad y longitud con las mismas funciones que el corpus.
+- La práctica y las carreras contra bots usan el corpus empaquetado (funcionan sin conexión). Por eso los cambios del panel afectan a los modos en línea: salas, desafío diario y rankings por texto.

@@ -17,6 +17,7 @@ Requisitos: Node 24 (`.nvmrc`), pnpm 10.30 (fijado en `packageManager`), Docker.
 | Formatear                                     | `pnpm format`                                                                                     |
 | E2E (Playwright)                              | `pnpm e2e` (reutiliza `pnpm dev` si está corriendo; con `CI=1` levanta el build con `next start`) |
 | Regenerar corpus y listas de palabras         | `pnpm --filter @tecleo/content build:corpus` (descarga a `packages/content/.cache/`)              |
+| Dar o quitar el rol de administrador          | `pnpm --filter @tecleo/server admin:grant <correo> [--revoke]`                                    |
 
 Los puertos 3100/4100/5440 evitan choques con otros proyectos locales (3000 y 5432 suelen estar ocupados).
 
@@ -38,6 +39,7 @@ e2e                    @tecleo/e2e — Playwright
 - El texto se separa en palabras; el separador (`' '`, o `'\n'` + sangría en código) va pegado a la palabra anterior. Solo se teclea el primer carácter del separador.
 - Registro de pulsaciones `{ t, input, expected, correct }`; los borrados usan `'\b'` (backspace) y `'\u0017'` (borrar palabra). Con `t` e `input` basta para reproducir (`replayKeystrokes`).
 - `metrics/metrics.ts`: `liveMetrics` para la UI y `analyze` para el resultado final (reproduce el registro para la línea de tiempo por segundo, teclas y bigramas).
+- `progressTimeline` (en `metrics.ts`): evolución de una prueba grabada con el mismo formato que un bot; mueve fantasmas y repeticiones.
 - `bots/`: modelo de bots (`simulateBot`) que precalcula el registro de pulsaciones con la semilla de la carrera. El ritmo tiene ruido log-normal, pausas tras puntuación, ráfagas en palabras cortas, errores que se corrigen y fatiga o sprint. Al final se escala para que el ppm neto sea el objetivo del nivel. `rankRunners` ordena la llegada (también para el servidor).
 - `typing/input-events.ts`: traduce `beforeinput`/`compositionend` a acciones. La web solo conecta eventos (`apps/web/src/features/typing/use-typing-input.ts`).
 
@@ -48,6 +50,8 @@ e2e                    @tecleo/e2e — Playwright
 - Resultados (`src/results`): el cliente envía pulsaciones codificadas; el servidor las juega con `playKeystrokes` del motor, verifica el texto del corpus, regenera los bots desde la semilla, aplica `inspectRun` (antitrampa) y guarda Race + RaceResult (+ bots) + KeyStat en una transacción.
 - Errores: siempre `{ statusCode, code, message, fields? }` (`apiErrorSchema`); validación con `ZodValidationPipe` y esquemas de `@tecleo/shared`.
 - Rate limiting: global `RATE_LIMIT`/min por IP; registro y login `AUTH_RATE_LIMIT`/min (refresh, el triple).
+- Progresión (`src/progression`): `previousMarks` (promedio, récord y récord del texto antes de guardar) y `applyProgress` (suma XP, recalcula el nivel y entrega logros nuevos) corren en la transacción de cada resultado, también en las salas en línea. Fórmulas y catálogo en `@tecleo/shared` (`progression.ts`).
+- Rankings y desafío diario (`src/leaderboards`, `src/daily`): mejor marca por persona con `DISTINCT ON`. `/leaderboards`, `/texts/:id/leaderboard`, `/daily`. Calificaciones en `/texts/:id/rating`. Panel de textos en `/admin/texts` (`AdminGuard` lee el rol de la base).
 - Tiempo real (`src/realtime`): `RoomsService` es autoritativo (salas, matchmaking, cuenta regresiva, progreso, llegada, límite, reconexión). Recibe el reloj, los tiempos, el store y el guardado por inyección; sus tests usan reloj falso. `RealtimeGateway` solo identifica (middleware de handshake), valida con los esquemas de `shared`, limita (token bucket por socket) y emite. `tick()` corre cada 100 ms. Tiempos por entorno: `MATCHMAKING_WAIT_MS`, `COUNTDOWN_MS`, `RECONNECT_GRACE_MS`.
 - Tests de integración en `test/*.e2e-spec.ts` contra `tecleo_test` (las migraciones se aplican solas en `globalSetup`). `test/realtime.e2e-spec.ts` usa sockets reales.
 
@@ -65,9 +69,11 @@ e2e                    @tecleo/e2e — Playwright
 - Preferencias con sesión: `settings/settings-sync.tsx` (las de la cuenta mandan al entrar; cada cambio se guarda).
 - Resultados: `results/save-result.ts` los envía al servidor con sesión o los guarda como invitado en `localStorage` (máx. 50) para migrarlos al registrarse.
 - Perfil (`features/profile`): cifras, evolución, mejores marcas, mapa de calor sobre el teclado (`keyboard-layouts.ts`, es-ES/es-LA/en-US), pares problemáticos e historial paginado.
-- Pantallas que dependen de fases futuras (rankings) usan `components/upcoming.tsx`: explican qué harán y llevan a la práctica, sin datos simulados.
 - Multijugador (`features/room`, `lib/realtime.ts`): un socket compartido que va directo al server (`NEXT_PUBLIC_SOCKET_URL`, por defecto `http://localhost:4100`). Al conectar, sincroniza el reloj (`estimateClock`); `serverToLocal` lleva horas del servidor a `performance.now()`. `room-store.ts` refleja `room:state`, arma la carrera local (estricta) y regenera los bots con la semilla. Envía el progreso con throttling, guarda lo escrito en `sessionStorage` para reconectar y manda la llegada. La pista (`features/race/track.tsx`) es genérica: la usan la carrera local (`local-track.tsx`) y la en línea. Los rivales se interpolan 250 ms por detrás (`snapshots.ts`).
 - Rutas de carrera: `/race` (bots, local), `/play` (pública, "Jugar ahora"), `/room` (crear o entrar con código) y `/room/[code]` (lobby, carrera, resultados y revancha). Salir de la pantalla saca de la sala (con 300 ms de gracia por el doble montaje de desarrollo); recargar no.
+- Progresión en la web: `features/results/result-insights.tsx` muestra XP, nivel, logros nuevos, comparación con promedio y récords, repetición, ranking del texto y 👍/👎 (`text-rating.tsx`) bajo los resultados de todos los modos. `useSaveResult` devuelve el resumen del servidor.
+- `features/solo/solo-run.tsx`: prueba en solitario sobre un texto dado (desafío diario, práctica dirigida y fantasma, con cuenta regresiva y pista). Para otro texto se le cambia la `key`.
+- Rutas de la Fase 6: `/leaderboards`, `/texts/[id]` (ranking del texto), `/replay/[resultId]` (`ReplayCursor`), `/ghost/[resultId]`, `/daily`, `/targeted` (puntos débiles de la cuenta o, sin cuenta, de las pruebas locales; `weakSpots`/`targetedWords` en `@tecleo/content`) y `/admin` (solo administradores).
 - Atajos: en práctica, Esc reinicia el intento; en carrera, Esc sale. Tab lleva a "Nuevo texto" y Enter lo activa.
 
 ## Convenciones
@@ -86,21 +92,21 @@ e2e                    @tecleo/e2e — Playwright
 
 ## Estado de las fases
 
-| Fase                      | Estado       | Notas                                                                                                                                                              |
-| ------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 0 – Base                  | ✅ completa  | Monorepo, tooling, CI, docker-compose, `/health` + indicador "conectando al servidor…"                                                                             |
-| 1 – Motor y práctica solo | ✅ completa  | Motor + 69 tests (97 % cobertura), corpus 160 textos/idioma, práctica tiempo/palabras/texto, resultados con gráfica                                                |
-| 2 – Diseño                | ✅ completa  | 6 temas con contraste AA verificado, tipografías configurables, i18n es/en, configuración local, todas las pantallas, 34 E2E con axe                               |
-| 3 – Bots locales          | ✅ completa  | Bots en el motor (93 tests del motor; rango de ppm por nivel verificado), pista, cuenta regresiva, podio, 39 E2E                                                   |
-| 4 – Backend y cuentas     | ✅ completa  | Prisma + auth con refresh rotativo, resultados validados por el motor, perfil con gráficas y mapa de calor, migración de invitado; 26 tests de integración, 46 E2E |
-| 5 – Multijugador          | ✅ completa  | Socket.IO autoritativo, salas privadas con revancha, matchmaking con bots, reloj sincronizado, reconexión, antitrampa en vivo; 49 tests del server, 52 E2E         |
-| 6 – Contenido extra       | ⏳ siguiente |                                                                                                                                                                    |
-| 7 – Pulido y despliegue   | pendiente    |                                                                                                                                                                    |
+| Fase                      | Estado       | Notas                                                                                                                                                                     |
+| ------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 – Base                  | ✅ completa  | Monorepo, tooling, CI, docker-compose, `/health` + indicador "conectando al servidor…"                                                                                    |
+| 1 – Motor y práctica solo | ✅ completa  | Motor + 69 tests (97 % cobertura), corpus 160 textos/idioma, práctica tiempo/palabras/texto, resultados con gráfica                                                       |
+| 2 – Diseño                | ✅ completa  | 6 temas con contraste AA verificado, tipografías configurables, i18n es/en, configuración local, todas las pantallas, 34 E2E con axe                                      |
+| 3 – Bots locales          | ✅ completa  | Bots en el motor (93 tests del motor; rango de ppm por nivel verificado), pista, cuenta regresiva, podio, 39 E2E                                                          |
+| 4 – Backend y cuentas     | ✅ completa  | Prisma + auth con refresh rotativo, resultados validados por el motor, perfil con gráficas y mapa de calor, migración de invitado; 26 tests de integración, 46 E2E        |
+| 5 – Multijugador          | ✅ completa  | Socket.IO autoritativo, salas privadas con revancha, matchmaking con bots, reloj sincronizado, reconexión, antitrampa en vivo; 49 tests del server, 52 E2E                |
+| 6 – Contenido extra       | ✅ completa  | XP/niveles, 17 logros, avatares desbloqueables, rankings, desafío diario, repeticiones, fantasma, práctica dirigida, 👍/👎 y panel de textos; 56 tests del server, 62 E2E |
+| 7 – Pulido y despliegue   | ⏳ siguiente |                                                                                                                                                                           |
 
 ### Pendiente explícito
 
 - Teclas muertas con teclado físico: el camino de composición está cubierto con eventos sintéticos (unit + E2E), falta confirmarlo a mano en macOS/Windows con distribución española y latinoamericana.
 - OAuth con Google (opcional en la spec): no implementado; requiere credenciales para probarlo.
-- Calificar textos 👍/👎, panel de administración de textos, XP/niveles y logros: Fase 6 (los campos existen en la base).
+- La práctica y las carreras contra bots usan el corpus empaquetado: los textos agregados o desactivados en el panel solo afectan a los modos en línea (salas, desafío diario).
 - Salas en memoria de un solo proceso: escalar a varias instancias requiere un `RoomStore` compartido (Redis) y el adaptador de Redis de Socket.IO (ver `docs/decisiones.md`).
 - Los resultados en línea de invitados no se guardan (ni local ni en el servidor).

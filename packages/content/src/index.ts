@@ -6,6 +6,13 @@ export * from './types.js';
 export { CODE_SNIPPETS } from './data/code.js';
 export { generateWords, type GenerateWordsOptions } from './words.js';
 export { bigramFrequencies, textDifficulty, type BigramFrequencies } from './difficulty.js';
+export {
+  targetedWords,
+  targetWeight,
+  weakSpots,
+  type Attempted,
+  type WeakSpots,
+} from './targeted.js';
 
 // Los JSON los genera `scripts/build-corpus.ts` y los validan los tests de `data.test.ts`;
 // el tipo inferido de un JSON no conserva las uniones literales, de ahí las conversiones.

@@ -4,6 +4,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { AdminModule } from './admin/admin.module.js';
 import { AuthModule } from './auth/auth.module.js';
+import { clientIp } from './common/client-ip.js';
 import { ConfigModule, ENV, type Env } from './config/config.module.js';
 import { HealthController } from './health/health.controller.js';
 import { LeaderboardsModule } from './leaderboards/leaderboards.module.js';
@@ -20,7 +21,11 @@ import { UsersModule } from './users/users.module.js';
     // Límite general por IP; los endpoints de autenticación tienen uno más estricto.
     ThrottlerModule.forRootAsync({
       inject: [ENV],
-      useFactory: (env: Env) => [{ ttl: 60_000, limit: env.RATE_LIMIT }],
+      useFactory: (env: Env) => ({
+        throttlers: [{ ttl: 60_000, limit: env.RATE_LIMIT }],
+        // Detrás del proxy de la web, la IP del cliente llega firmada en una cabecera.
+        getTracker: (request) => clientIp(request, env.PROXY_SECRET),
+      }),
     }),
     AuthModule,
     UsersModule,

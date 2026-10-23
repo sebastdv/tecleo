@@ -38,6 +38,11 @@ const envSchema = z.object({
   RECONNECT_GRACE_MS: z.coerce.number().int().min(0).default(30_000),
   /** Saltos de proxy de confianza para leer la IP real (rate limiting detrás de Next/Render). */
   TRUST_PROXY: z.coerce.number().int().min(0).default(1),
+  /**
+   * Secreto compartido con el proxy de la web: con él, el server acepta la IP del cliente que
+   * reenvía el proxy (ver `common/client-ip.ts`). Sin él se usa la IP de la conexión.
+   */
+  PROXY_SECRET: z.string().min(24).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

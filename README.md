@@ -2,6 +2,8 @@
 
 Carreras de mecanografía en tiempo real contra otras personas o contra bots. Aparece un texto y lo escribes. Mientras tanto ves en vivo lo correcto, lo incorrecto y lo pendiente, y tu corredor avanza en la pista junto a los demás.
 
+**Demo:** https://tecleo-nine.vercel.app
+
 ![Carrera contra bots: la pista con cuatro corredores sobre el texto a medio escribir](docs/images/carrera.png)
 
 ## Qué se puede hacer

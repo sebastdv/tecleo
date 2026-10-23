@@ -23,11 +23,12 @@ services:
       # Conexión directa de Neon (sin "-pooler"), con sslmode=require.
       - key: DATABASE_URL
         sync: false
-      # URL pública de la web en Vercel (CORS y Socket.IO), p. ej. https://tecleo.vercel.app
+      # URL pública de la web en Vercel (CORS y Socket.IO).
       - key: WEB_ORIGIN
-        sync: false
-      # El mismo valor que en Vercel: firma la IP del cliente que reenvía el proxy de la web.
+        value: https://tecleo-nine.vercel.app
+      # Lo genera Render; el mismo valor va en Vercel: firma la IP del cliente que reenvía el
+      # proxy de la web.
       - key: PROXY_SECRET
-        sync: false
+        generateValue: true
       - key: TRUST_PROXY
         value: '1'

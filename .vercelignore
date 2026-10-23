@@ -1,0 +1,14 @@
+# Lo que la CLI de Vercel no sube: dependencias, builds locales y archivos de entorno.
+node_modules
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/.env
+**/.env.local
+**/.env.*.local
+packages/content/.cache
+e2e/test-results
+e2e/playwright-report
+apps/server/src/generated
+docs/images

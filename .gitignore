@@ -16,3 +16,6 @@ test-results/
 
 .DS_Store
 *.log
+
+# Enlace local con el proyecto de Vercel (lo crea `vercel link`).
+.vercel

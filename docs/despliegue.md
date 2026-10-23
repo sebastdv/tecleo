@@ -20,27 +20,14 @@ Mientras el server despierta, la web muestra «Conectando al servidor…» y dej
 1. Crea un proyecto en la región **AWS us-east-1**, cerca de Render Virginia.
 2. Copia la cadena de conexión **directa**, la que no lleva `-pooler`, con `sslmode=require`. Las migraciones de Prisma necesitan una conexión directa.
 
-### 2. Secreto compartido
+### 2. Server (Render)
 
-Genera un valor largo al azar. Va igual en Vercel y en Render:
+En Render, entra a **New → Blueprint** y elige este repositorio: Render lee `render.yaml`. Solo hay que pegar `DATABASE_URL`, la cadena directa de Neon.
 
-```bash
-openssl rand -base64 32
-```
+El Blueprint ya trae el resto:
 
-Con él, el server confía en la IP del cliente que le reenvía la web. Sin él, todo el tráfico llegaría con la IP de Vercel y todas las personas compartirían el límite de intentos de login.
-
-### 3. Server (Render)
-
-En Render, entra a **New → Blueprint** y elige este repositorio: Render lee `render.yaml`. Completa las variables marcadas a mano:
-
-| Variable       | Valor                                                                                                                                  |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL` | La cadena directa de Neon.                                                                                                             |
-| `WEB_ORIGIN`   | La URL pública de la web, por ejemplo `https://tecleo.vercel.app`. Si todavía no la sabes, pon una provisoria y cámbiala en el paso 5. |
-| `PROXY_SECRET` | El secreto del paso 2.                                                                                                                 |
-
-`JWT_SECRET` lo genera Render.
+- `WEB_ORIGIN`: la URL de la web, https://tecleo-nine.vercel.app.
+- `JWT_SECRET` y `PROXY_SECRET`: los genera Render.
 
 Cada arranque corre `start:prod`:
 
@@ -50,10 +37,18 @@ Cada arranque corre `start:prod`:
 
 `/health` sirve de chequeo.
 
+### 3. Secreto compartido
+
+Copia el `PROXY_SECRET` que generó Render (pestaña **Environment** del servicio) y cárgalo en Vercel con el mismo nombre, en el entorno de producción.
+
+Con él, el server confía en la IP del cliente que le reenvía la web. Sin él, todo el tráfico llegaría con la IP de Vercel y todas las personas compartirían el límite de intentos de login.
+
 ### 4. Web (Vercel)
 
-1. Importa el repositorio y fija **Root Directory** en `apps/web`. `apps/web/vercel.json` ya trae la instalación y el build del monorepo.
-2. Carga las variables de entorno:
+El proyecto `tecleo` ya existe y está publicado en https://tecleo-nine.vercel.app. Se despliega con `vercel deploy --prod` desde la raíz del repo.
+
+1. **Root Directory** en `apps/web`. `apps/web/vercel.json` trae la instalación y el build del monorepo, y `.vercelignore` evita subir builds locales y archivos `.env`.
+2. Variables de entorno de producción:
 
    | Variable                 | Valor                                                               |
    | ------------------------ | ------------------------------------------------------------------- |
@@ -65,7 +60,7 @@ Cada arranque corre `start:prod`:
 
 ### 5. Cerrar el círculo
 
-1. Si `WEB_ORIGIN` era provisoria, ponle en Render la URL definitiva de Vercel. Render vuelve a desplegar solo.
+1. Después de cargar `PROXY_SECRET` en Vercel, vuelve a desplegar la web (`vercel deploy --prod`) para que la tome.
 2. Comprueba que `https://<web>/api/health` responde `{"status":"ok"}`. Eso confirma que el proxy de la web llega al server.
 3. Para dar el rol de administrador, corre desde tu máquina, contra la base de Neon:
 

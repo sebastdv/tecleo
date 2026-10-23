@@ -3,7 +3,7 @@
 import { LANGUAGES, THEMES, type Language, type ThemeId } from '@tecleo/shared';
 import { FileText, Languages, LogOut, Menu, Palette, Settings, User } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { logout } from '@/auth/auth-actions';
@@ -46,14 +46,9 @@ function isActive(pathname: string, href: string): boolean {
 
 interface NavLinksProps {
   readonly vertical?: boolean;
-  readonly onNavigate?: () => void;
 }
 
-function NavList({
-  vertical = false,
-  onNavigate,
-  pathname,
-}: NavLinksProps & { pathname: string | null }) {
+function NavList({ vertical = false, pathname }: NavLinksProps & { pathname: string | null }) {
   const t = useTranslations('nav');
   return (
     <ul className={vertical ? 'flex flex-col gap-1' : 'flex items-center gap-1'}>
@@ -63,7 +58,6 @@ function NavList({
           <li key={item.href}>
             <Link
               href={item.href}
-              onClick={onNavigate}
               aria-current={active ? 'page' : undefined}
               className="relative block rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground aria-[current=page]:text-foreground"
             >
@@ -310,14 +304,22 @@ export function Header() {
 
 function MobileMenu() {
   const t = useTranslations('nav');
+  // Tocar cualquier enlace del panel lo cierra: si no, quedaría tapando la página nueva.
+  const [open, setOpen] = useState(false);
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="md:hidden" aria-label={t('openMenu')}>
           <Menu />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="gap-6 p-6">
+      <SheetContent
+        side="right"
+        className="gap-6 p-6"
+        onClick={(event) => {
+          if (event.target instanceof Element && event.target.closest('a')) setOpen(false);
+        }}
+      >
         <SheetTitle>
           <Logo />
         </SheetTitle>

@@ -18,6 +18,9 @@ Requisitos: Node 24 (`.nvmrc`), pnpm 10.30 (fijado en `packageManager`), Docker.
 | E2E (Playwright)                              | `pnpm e2e` (reutiliza `pnpm dev` si está corriendo; con `CI=1` levanta el build con `next start`) |
 | Regenerar corpus y listas de palabras         | `pnpm --filter @tecleo/content build:corpus` (descarga a `packages/content/.cache/`)              |
 | Dar o quitar el rol de administrador          | `pnpm --filter @tecleo/server admin:grant <correo> [--revoke]`                                    |
+| Todo desde cero en local (un comando)         | `pnpm local` (instala, crea los `.env`, Postgres, migra, carga textos y `pnpm dev`)               |
+| Lighthouse del inicio                         | `pnpm lighthouse [url]` con la web en marcha (mediana de 3 corridas, objetivo ≥ 90)               |
+| Capturas del README                           | `pnpm --filter @tecleo/e2e screenshots` con web y server en marcha (`docs/images`)                |
 
 Los puertos 3100/4100/5440 evitan choques con otros proyectos locales (3000 y 5432 suelen estar ocupados).
 
@@ -49,7 +52,8 @@ e2e                    @tecleo/e2e — Playwright
 - Auth (`src/auth`): argon2id, access token JWT HS256 de 15 min (en memoria del cliente), refresh token opaco en cookie httpOnly `tecleo_refresh` (Path `/api/auth`, SameSite Lax). Sesiones rotativas por familia: reusar un token rotado revoca la familia.
 - Resultados (`src/results`): el cliente envía pulsaciones codificadas; el servidor las juega con `playKeystrokes` del motor, verifica el texto del corpus, regenera los bots desde la semilla, aplica `inspectRun` (antitrampa) y guarda Race + RaceResult (+ bots) + KeyStat en una transacción.
 - Errores: siempre `{ statusCode, code, message, fields? }` (`apiErrorSchema`); validación con `ZodValidationPipe` y esquemas de `@tecleo/shared`.
-- Rate limiting: global `RATE_LIMIT`/min por IP; registro y login `AUTH_RATE_LIMIT`/min (refresh, el triple).
+- Rate limiting: global `RATE_LIMIT`/min por IP; registro y login `AUTH_RATE_LIMIT`/min (refresh, el triple). La IP sale de `common/client-ip.ts`: la que reenvía el proxy de la web si trae `PROXY_SECRET`, o la de la conexión.
+- Producción: `start:prod` migra, carga el corpus si la base está vacía y arranca. Despliegue en `render.yaml` + `docs/despliegue.md`.
 - Progresión (`src/progression`): `previousMarks` (promedio, récord y récord del texto antes de guardar) y `applyProgress` (suma XP, recalcula el nivel y entrega logros nuevos) corren en la transacción de cada resultado, también en las salas en línea. Fórmulas y catálogo en `@tecleo/shared` (`progression.ts`).
 - Rankings y desafío diario (`src/leaderboards`, `src/daily`): mejor marca por persona con `DISTINCT ON`. `/leaderboards`, `/texts/:id/leaderboard`, `/daily`. Calificaciones en `/texts/:id/rating`. Panel de textos en `/admin/texts` (`AdminGuard` lee el rol de la base).
 - Tiempo real (`src/realtime`): `RoomsService` es autoritativo (salas, matchmaking, cuenta regresiva, progreso, llegada, límite, reconexión). Recibe el reloj, los tiempos, el store y el guardado por inyección; sus tests usan reloj falso. `RealtimeGateway` solo identifica (middleware de handshake), valida con los esquemas de `shared`, limita (token bucket por socket) y emite. `tick()` corre cada 100 ms. Tiempos por entorno: `MATCHMAKING_WAIT_MS`, `COUNTDOWN_MS`, `RECONNECT_GRACE_MS`.
@@ -57,7 +61,7 @@ e2e                    @tecleo/e2e — Playwright
 
 ### Web
 
-- Rutas en `src/app/[locale]/…` (`/es`, `/en`); el layout raíz es `app/[locale]/layout.tsx` y lee el idioma con `next/root-params`. `src/proxy.ts` (antes "middleware") redirige las rutas sin idioma. Mensajes en `messages/{es,en}.json` (mismas claves, lo verifica un test).
+- Rutas en `src/app/[locale]/…` (`/es`, `/en`); el layout raíz es `app/[locale]/layout.tsx` y lee el idioma con `next/root-params`. `src/proxy.ts` (antes "middleware") redirige las rutas sin idioma y reenvía `/api/*` al server (`SERVER_URL`) con la IP del cliente firmada (`PROXY_SECRET`). Mensajes en `messages/{es,en}.json` (mismas claves, lo verifica un test).
 - Temas: `src/theme/themes.ts` es la única fuente de los tokens; genera las variables CSS (inyectadas en `<head>`) y un test verifica contraste WCAG AA. El tema activo es `data-theme` en `<html>`; un script en `<head>` lo aplica antes del primer pintado.
 - Preferencias: `src/settings/settings-store.ts` (Zustand + `localStorage`, esquema `userSettingsSchema` de `@tecleo/shared`). Los stores persistidos usan `skipHydration`, se rehidratan tras montar y guardan con `readFirstStorage()` (`lib/persist-storage.ts`), que no escribe hasta haber leído.
 - Componentes base: shadcn/ui (Radix) en `src/components/ui` — generados con la CLI, se pueden editar. Layout en `src/components/layout`.
@@ -92,16 +96,16 @@ e2e                    @tecleo/e2e — Playwright
 
 ## Estado de las fases
 
-| Fase                      | Estado       | Notas                                                                                                                                                                     |
-| ------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0 – Base                  | ✅ completa  | Monorepo, tooling, CI, docker-compose, `/health` + indicador "conectando al servidor…"                                                                                    |
-| 1 – Motor y práctica solo | ✅ completa  | Motor + 69 tests (97 % cobertura), corpus 160 textos/idioma, práctica tiempo/palabras/texto, resultados con gráfica                                                       |
-| 2 – Diseño                | ✅ completa  | 6 temas con contraste AA verificado, tipografías configurables, i18n es/en, configuración local, todas las pantallas, 34 E2E con axe                                      |
-| 3 – Bots locales          | ✅ completa  | Bots en el motor (93 tests del motor; rango de ppm por nivel verificado), pista, cuenta regresiva, podio, 39 E2E                                                          |
-| 4 – Backend y cuentas     | ✅ completa  | Prisma + auth con refresh rotativo, resultados validados por el motor, perfil con gráficas y mapa de calor, migración de invitado; 26 tests de integración, 46 E2E        |
-| 5 – Multijugador          | ✅ completa  | Socket.IO autoritativo, salas privadas con revancha, matchmaking con bots, reloj sincronizado, reconexión, antitrampa en vivo; 49 tests del server, 52 E2E                |
-| 6 – Contenido extra       | ✅ completa  | XP/niveles, 17 logros, avatares desbloqueables, rankings, desafío diario, repeticiones, fantasma, práctica dirigida, 👍/👎 y panel de textos; 56 tests del server, 62 E2E |
-| 7 – Pulido y despliegue   | ⏳ siguiente |                                                                                                                                                                           |
+| Fase                      | Estado      | Notas                                                                                                                                                                     |
+| ------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 – Base                  | ✅ completa | Monorepo, tooling, CI, docker-compose, `/health` + indicador "conectando al servidor…"                                                                                    |
+| 1 – Motor y práctica solo | ✅ completa | Motor + 69 tests (97 % cobertura), corpus 160 textos/idioma, práctica tiempo/palabras/texto, resultados con gráfica                                                       |
+| 2 – Diseño                | ✅ completa | 6 temas con contraste AA verificado, tipografías configurables, i18n es/en, configuración local, todas las pantallas, 34 E2E con axe                                      |
+| 3 – Bots locales          | ✅ completa | Bots en el motor (93 tests del motor; rango de ppm por nivel verificado), pista, cuenta regresiva, podio, 39 E2E                                                          |
+| 4 – Backend y cuentas     | ✅ completa | Prisma + auth con refresh rotativo, resultados validados por el motor, perfil con gráficas y mapa de calor, migración de invitado; 26 tests de integración, 46 E2E        |
+| 5 – Multijugador          | ✅ completa | Socket.IO autoritativo, salas privadas con revancha, matchmaking con bots, reloj sincronizado, reconexión, antitrampa en vivo; 49 tests del server, 52 E2E                |
+| 6 – Contenido extra       | ✅ completa | XP/niveles, 17 logros, avatares desbloqueables, rankings, desafío diario, repeticiones, fantasma, práctica dirigida, 👍/👎 y panel de textos; 56 tests del server, 62 E2E |
+| 7 – Pulido y despliegue   | ⏳ en curso |                                                                                                                                                                           |
 
 ### Pendiente explícito
 

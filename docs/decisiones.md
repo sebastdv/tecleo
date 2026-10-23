@@ -421,3 +421,55 @@ Los avatares se desbloquean por nivel (Bosque en el 3, Ciruela en el 6) o por lo
 - El rol de administrador es una columna de `User` y se da con `pnpm --filter @tecleo/server admin:grant <correo>`, sin interfaz para darlo. El servidor lo lee de la base en cada petición, no del token.
 - Los textos nuevos reciben dificultad y longitud con las mismas funciones que el corpus.
 - La práctica y las carreras contra bots usan el corpus empaquetado (funcionan sin conexión). Por eso los cambios del panel afectan a los modos en línea: salas, desafío diario y rankings por texto.
+
+## Fase 7
+
+### La transición entre pantallas es CSS y no anima la opacidad
+
+Medido con Lighthouse en el móvil simulado:
+
+- **Antes:** la transición la hacía Motion empezando con `opacity: 0`, así que el texto principal no contaba como pintado hasta hidratar. Rendimiento 79, LCP de 5,6 s.
+- **Ahora:** la página aparece con un desplazamiento corto en CSS (`tw-animate-css`), que corre sin JavaScript y no oculta el contenido. Mediana de rendimiento 92 y accesibilidad 100. Se probó también un fundido desde 40 % de opacidad, que daba 90–93.
+
+`pnpm lighthouse` repite la medición: mediana de 3 corridas, objetivo ≥ 90.
+
+### Sin refresh para invitados
+
+Un invitado pedía `/auth/refresh` en cada visita y recibía un 401, que ensuciaba la consola y le restaba a «buenas prácticas». Ahora la sesión deja una pista (`tecleo-has-session` en `localStorage`, sin secretos): sin ella no se pregunta al servidor. Si la pista existe pero la cookie venció, el primer 401 la borra.
+
+### La IP del cliente pasa firmada por el proxy
+
+La API se sirve bajo el dominio de la web (`/api/*`), así la cookie del refresh es de primera parte. En producción eso significa Vercel → Render, y Vercel no documenta si conserva la IP del cliente en un rewrite externo. Si no la conserva, todas las personas compartirían el límite de 10 logins por minuto.
+
+Por eso el proxy (`src/proxy.ts`, que reemplaza el rewrite de `next.config`):
+
+- manda la IP del cliente en `x-tecleo-client-ip`, junto con un secreto compartido (`PROXY_SECRET`);
+- borra antes esas cabeceras si llegan desde afuera.
+
+El server solo acepta esa IP si el secreto coincide (comparación en tiempo constante). Sin el secreto usa la IP de la conexión, como antes.
+
+### Despliegue
+
+Se re-verificaron las opciones gratuitas en octubre de 2026:
+
+- **Web:** Vercel Hobby.
+- **Server:** Render Free, que ahora mantiene despierto el servicio mientras llegan mensajes de WebSocket; duerme a los 15 min sin tráfico y tarda alrededor de un minuto en despertar.
+- **Base de datos:** Neon Free (0,5 GB y 100 CU-h).
+
+Cómo arranca el server:
+
+- `render.yaml` describe el servicio. Cada arranque migra y carga el corpus solo si la base está vacía (`seed --if-empty`), para no alargar el despertar.
+- Se usa la conexión directa de Neon, no la del pooler: Prisma la necesita para migrar y el volumen es chico.
+- Las salas siguen en memoria (ver Fase 5): si Render duerme el servidor, se pierden las carreras en curso, no los resultados guardados.
+
+### Responsive y fluidez
+
+Dos E2E nuevos:
+
+- **Teléfono de 390 px:** ninguna página se desborda a lo ancho, el menú lleva a cada sección y se puede practicar.
+- **Escritura:** mientras se escribe a ~200 ppm no aparece ninguna tarea larga (≥ 50 ms) en el hilo principal.
+
+Encontraron dos fallos reales, ya arreglados:
+
+- los grupos de botones de Configuración no se partían en varias líneas y desbordaban la página;
+- el menú móvil quedaba abierto, tapando la página nueva, al tocar un enlace.

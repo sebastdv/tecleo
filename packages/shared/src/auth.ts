@@ -35,9 +35,15 @@ export const publicUserSchema = z.object({
 });
 export type PublicUser = z.infer<typeof publicUserSchema>;
 
+/** La propia cuenta: lo público más lo que solo ve su dueño. */
+export const meSchema = publicUserSchema.extend({
+  isAdmin: z.boolean(),
+});
+export type Me = z.infer<typeof meSchema>;
+
 export const authResponseSchema = z.object({
   accessToken: z.string(),
-  user: publicUserSchema,
+  user: meSchema,
 });
 export type AuthResponse = z.infer<typeof authResponseSchema>;
 
@@ -63,6 +69,9 @@ export const API_ERROR_CODES = [
   'TEXT_MISMATCH',
   'INCOMPLETE_RUN',
   'RATE_LIMITED',
+  'LOCKED',
+  'FORBIDDEN',
+  'NOT_DAILY',
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 

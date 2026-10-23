@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { progressUpdateSchema } from './progression.js';
 import { BOT_LEVELS, LANGUAGES } from './settings.js';
 
 /** Máximo de pulsaciones que se aceptan en un resultado (unos 10 minutos a 200 ppm). */
@@ -20,7 +21,8 @@ export const encodedKeystrokesSchema = z
   });
 export type EncodedKeystrokesInput = z.infer<typeof encodedKeystrokesSchema>;
 
-export const RESULT_MODES = ['practice', 'bots'] as const;
+/** Modos que se guardan por `/results` (los de salas en línea los guarda el gateway). */
+export const RESULT_MODES = ['practice', 'bots', 'daily', 'ghost', 'targeted'] as const;
 export type ResultMode = (typeof RESULT_MODES)[number];
 export const PRACTICE_KINDS = ['time', 'words', 'text'] as const;
 export type PracticeKind = (typeof PRACTICE_KINDS)[number];
@@ -45,6 +47,8 @@ export const submitResultSchema = z.object({
       levels: z.array(z.enum(BOT_LEVELS)).min(1).max(5),
     })
     .nullable(),
+  /** Carrera fantasma: el resultado contra el que se corrió (el servidor decide quién ganó). */
+  ghostResultId: z.uuid().nullable().default(null),
   keystrokes: encodedKeystrokesSchema,
   /** Cuándo se jugó (resultados de invitado que se migran); el servidor lo acota a "ahora". */
   playedAt: z.iso.datetime(),
@@ -71,6 +75,8 @@ export const resultSummarySchema = z.object({
   ignoreAccents: z.boolean(),
   flagged: z.boolean(),
   createdAt: z.iso.datetime(),
+  /** XP, nivel, logros y comparaciones; solo al guardar un resultado nuevo. */
+  progress: progressUpdateSchema.nullable().default(null),
 });
 export type ResultSummary = z.infer<typeof resultSummarySchema>;
 

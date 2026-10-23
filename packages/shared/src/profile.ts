@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { publicUserSchema } from './auth.js';
+import { unlockedAchievementSchema } from './progression.js';
 import { resultSummarySchema } from './results.js';
 import { LANGUAGES } from './settings.js';
 
@@ -15,6 +16,7 @@ export const profileSchema = publicUserSchema.extend({
     wins: z.number().int(),
     winRate: z.number(),
   }),
+  achievements: z.array(unlockedAchievementSchema),
 });
 export type Profile = z.infer<typeof profileSchema>;
 

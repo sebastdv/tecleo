@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { AVATARS } from './auth.js';
+import { progressUpdateSchema } from './progression.js';
 import { encodedKeystrokesSchema } from './results.js';
 import { BOT_LEVELS, LANGUAGES } from './settings.js';
 
@@ -134,6 +135,8 @@ export const raceResultsSchema = z.object({
   ),
   /** Id del resultado guardado de quien recibe el evento (si tiene cuenta). */
   savedResultId: z.string().nullable(),
+  /** XP, nivel y logros que sumó quien recibe el evento (si tiene cuenta). */
+  progress: progressUpdateSchema.nullable().default(null),
 });
 export type RaceResults = z.infer<typeof raceResultsSchema>;
 

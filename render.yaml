@@ -1,0 +1,33 @@
+# Blueprint de Render para el server (NestJS + Socket.IO). La web va en Vercel y la base en
+# Neon: ver docs/despliegue.md. Las variables con `sync: false` se cargan a mano en Render.
+services:
+  - type: web
+    name: tecleo-server
+    runtime: node
+    plan: free
+    region: virginia
+    # Instala todo (también devDependencies: Prisma CLI y tsx hacen falta al arrancar) y
+    # compila el server con sus paquetes.
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm turbo run build --filter=@tecleo/server
+    # Migraciones y corpus (solo si la base está vacía) antes de escuchar.
+    startCommand: pnpm --filter @tecleo/server start:prod
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: '24'
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      # Conexión directa de Neon (sin "-pooler"), con sslmode=require.
+      - key: DATABASE_URL
+        sync: false
+      # URL pública de la web en Vercel (CORS y Socket.IO), p. ej. https://tecleo.vercel.app
+      - key: WEB_ORIGIN
+        sync: false
+      # El mismo valor que en Vercel: firma la IP del cliente que reenvía el proxy de la web.
+      - key: PROXY_SECRET
+        sync: false
+      - key: TRUST_PROXY
+        value: '1'

@@ -14,7 +14,8 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
-    "admin:grant": "node --env-file-if-exists=.env --import tsx prisma/admin-grant.ts"
+    "admin:grant": "node --env-file-if-exists=.env --import tsx prisma/admin-grant.ts",
+    "start:prod": "prisma migrate deploy && tsx prisma/seed.ts --if-empty && node dist/main.js"
   },
   "dependencies": {
     "@nestjs/common": "12.2.0",

@@ -17,7 +17,9 @@
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
-    "e2e": "pnpm --filter @tecleo/e2e e2e"
+    "e2e": "pnpm --filter @tecleo/e2e e2e",
+    "lighthouse": "pnpm --filter @tecleo/e2e lighthouse",
+    "local": "pnpm install && node scripts/local-env.mjs && pnpm db:up && pnpm turbo run build --filter=@tecleo/content && pnpm --filter @tecleo/server db:deploy && pnpm --filter @tecleo/server db:seed && pnpm dev"
   },
   "devDependencies": {
     "prettier": "3.9.10",

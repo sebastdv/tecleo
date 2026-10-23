@@ -3,7 +3,12 @@
  * existentes por id y no toca su estado (activo), likes ni dislikes.
  *
  *   pnpm --filter @tecleo/server db:seed
+ *
+ * Con `--if-empty` no hace nada si ya hay textos: así puede correr en cada arranque del
+ * server en producción sin alargarlo (ver `start:prod`).
  */
+import { existsSync } from 'node:fs';
+
 import { PrismaPg } from '@prisma/adapter-pg';
 import {
   bigramFrequencies,
@@ -15,11 +20,17 @@ import {
 
 import { PrismaClient } from '../src/generated/prisma/client.js';
 
+// En local, el `.env` del server (como `prisma.config.ts`); en producción, el entorno.
+if (existsSync('.env')) process.loadEnvFile('.env');
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error('Falta DATABASE_URL');
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 
 async function main() {
+  if (process.argv.includes('--if-empty') && (await prisma.text.count()) > 0) {
+    console.log('Ya hay textos: no se carga el corpus');
+    return;
+  }
   let count = 0;
   for (const language of TEXT_LANGUAGES) {
     for (const quote of await loadQuotes(language)) {

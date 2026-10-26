@@ -19,6 +19,18 @@ function sameSecret(given: string, expected: string): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
+/** ¿La IP del cliente viene del proxy de la web (con el secreto correcto) o de la conexión? */
+export function clientIpSource(
+  request: RequestLike,
+  proxySecret: string | undefined,
+): 'proxy' | 'connection' {
+  const forwarded = header(request, CLIENT_IP_HEADER);
+  const secret = header(request, PROXY_SECRET_HEADER);
+  return proxySecret && secret && forwarded && sameSecret(secret, proxySecret)
+    ? 'proxy'
+    : 'connection';
+}
+
 /**
  * IP del cliente para el rate limiting. Detrás del proxy de la web (Vercel → Render) la IP de
  * la conexión es la del proxy: la del cliente llega en una cabecera que solo se acepta junto
@@ -26,7 +38,6 @@ function sameSecret(given: string, expected: string): boolean {
  */
 export function clientIp(request: RequestLike, proxySecret: string | undefined): string {
   const forwarded = header(request, CLIENT_IP_HEADER);
-  const secret = header(request, PROXY_SECRET_HEADER);
-  if (proxySecret && secret && forwarded && sameSecret(secret, proxySecret)) return forwarded;
+  if (forwarded && clientIpSource(request, proxySecret) === 'proxy') return forwarded;
   return request.ip ?? 'unknown';
 }

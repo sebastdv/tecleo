@@ -7,6 +7,12 @@ export const healthResponseSchema = z.object({
   uptimeSeconds: z.number().nonnegative(),
   /** Hora del servidor en milisegundos desde epoch. */
   serverTime: z.number().int(),
+  /**
+   * De dónde sacó el server la IP de quien pide (rate limiting): `proxy` si la reenvió el proxy
+   * de la web con el secreto correcto, `connection` si es la de la conexión. Sirve para
+   * comprobar el despliegue sin exponer ninguna IP.
+   */
+  clientIpSource: z.enum(['proxy', 'connection']).optional(),
 });
 
 export type HealthResponse = z.infer<typeof healthResponseSchema>;

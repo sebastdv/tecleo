@@ -1,18 +1,20 @@
 'use client';
 
 import { DEFAULT_ROOM_CONFIG, roomCodeSchema, type RealtimeError } from '@tecleo/shared';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useId, useState } from 'react';
 
 import { useAuthStore } from '@/auth/auth-store';
+import { PageHeader } from '@/components/layout/page-header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useRouter } from '@/i18n/navigation';
-import { readGuest, setGuestName } from '@/lib/realtime';
+import { usePathname } from '@/i18n/navigation';
+import { connectRealtime, readGuest, setGuestName } from '@/lib/realtime';
 import { useSettingsStore } from '@/settings/settings-store';
 
 import { createRoom } from './room-store';
+import { RoomScreen } from './room-screen';
 
 /** Nombre con el que un invitado aparece en las salas (se guarda en este navegador). */
 function GuestNameField() {
@@ -46,13 +48,47 @@ function GuestNameField() {
   );
 }
 
-/** Crear una sala privada o entrar a una con su código. */
+/**
+ * Crear una sala privada o entrar a una con su código. La sala se muestra aquí mismo y la URL
+ * pasa a `/room/CÓDIGO` con `history.pushState`: sin pedir otra página al servidor, entrar es
+ * casi inmediato. Recargar esa URL abre la página de la sala como siempre.
+ */
 export function RoomEntry() {
   const t = useTranslations('room');
+  const pathname = usePathname();
+  const code = /^\/room\/([^/]+)$/.exec(pathname)?.[1]?.toUpperCase();
+  // `pushState` no cambia el título como lo haría una página nueva.
+  const title = code ? t('title', { code }) : t('entryTitle');
+  useEffect(() => {
+    document.title = `${title} · Tecleo`;
+  }, [title]);
+  if (code) {
+    return (
+      <>
+        <div data-chrome>
+          <PageHeader title={t('title', { code })} description={t('description')} />
+        </div>
+        <RoomScreen target={{ mode: 'private', code }} />
+      </>
+    );
+  }
+  return (
+    <>
+      <div data-chrome>
+        <PageHeader title={t('entryTitle')} description={t('entryDescription')} />
+      </div>
+      <EntryForms />
+    </>
+  );
+}
+
+function EntryForms() {
+  const t = useTranslations('room');
   const tErrors = useTranslations('room.errors');
-  const router = useRouter();
+  const locale = useLocale();
   const codeId = useId();
-  const guest = useAuthStore((state) => state.status === 'guest');
+  const authStatus = useAuthStore((state) => state.status);
+  const guest = authStatus === 'guest';
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<RealtimeError | 'offline' | null>(null);
   const [code, setCode] = useState('');
@@ -62,13 +98,23 @@ export function RoomEntry() {
     void useSettingsStore.persist.rehydrate();
   }, []);
 
+  // La conexión (y la medición del reloj) se prepara mientras se lee la página: crear o entrar
+  // a una sala no tiene que esperarla.
+  useEffect(() => {
+    if (authStatus !== 'unknown') void connectRealtime().catch(() => undefined);
+  }, [authStatus]);
+
+  const openRoom = (roomCode: string) => {
+    window.history.pushState(null, '', `/${locale}/room/${roomCode}`);
+  };
+
   const onCreate = async () => {
     setCreating(true);
     setCreateError(null);
     try {
       const { textLanguage } = useSettingsStore.getState().settings;
       const result = await createRoom({ ...DEFAULT_ROOM_CONFIG, language: textLanguage });
-      if (typeof result === 'string') router.push(`/room/${result}`);
+      if (typeof result === 'string') openRoom(result);
       else setCreateError(result);
     } catch {
       setCreateError('offline');
@@ -81,7 +127,7 @@ export function RoomEntry() {
     event.preventDefault();
     const parsed = roomCodeSchema.safeParse(code);
     setCodeInvalid(!parsed.success);
-    if (parsed.success) router.push(`/room/${parsed.data}`);
+    if (parsed.success) openRoom(parsed.data);
   };
 
   return (

@@ -7,15 +7,19 @@ services:
     plan: free
     region: virginia
     # Instala todo (también devDependencies: Prisma CLI y tsx hacen falta al arrancar) y
-    # compila el server con sus paquetes.
-    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm turbo run build --filter=@tecleo/server
+    # compila el server con sus paquetes. `corepack pnpm` usa la versión de `packageManager`;
+    # `corepack enable` no sirve en Render: su pnpm vive en /usr/bin, de solo lectura.
+    buildCommand: corepack pnpm install --frozen-lockfile --prod=false && corepack pnpm turbo run build --filter=@tecleo/server
     # Migraciones y corpus (solo si la base está vacía) antes de escuchar.
-    startCommand: pnpm --filter @tecleo/server start:prod
+    startCommand: corepack pnpm --filter @tecleo/server start:prod
     healthCheckPath: /health
     autoDeploy: true
     envVars:
       - key: NODE_VERSION
         value: '24'
+      # Sin terminal no hay a quién preguntarle si descargar pnpm: que lo descargue.
+      - key: COREPACK_ENABLE_DOWNLOAD_PROMPT
+        value: '0'
       - key: NODE_ENV
         value: production
       - key: JWT_SECRET

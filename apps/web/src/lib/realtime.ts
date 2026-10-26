@@ -89,15 +89,21 @@ function handshake(callback: (data: object) => void): void {
   })();
 }
 
+/**
+ * Los pings salen a la vez: en serie, con ~150 ms de ida y vuelta, retrasaban casi un segundo
+ * la primera acción (crear o entrar a una sala). Igual se usa el de menor ida y vuelta.
+ */
 async function syncClock(target: Socket): Promise<void> {
-  const samples: ClockSample[] = [];
-  for (let index = 0; index < CLOCK_SAMPLES; index++) {
+  const pings = Array.from({ length: CLOCK_SAMPLES }, async (): Promise<ClockSample | null> => {
     const sent = Date.now();
     const pong = timePongSchema.safeParse(
       await target.timeout(5_000).emitWithAck(EVENTS.timePing, { clientTime: sent }),
     );
-    if (pong.success) samples.push({ sent, server: pong.data.serverTime, received: Date.now() });
-  }
+    return pong.success ? { sent, server: pong.data.serverTime, received: Date.now() } : null;
+  });
+  const samples = (await Promise.allSettled(pings)).flatMap((result) =>
+    result.status === 'fulfilled' && result.value ? [result.value] : [],
+  );
   if (samples.length > 0) clockOffset = estimateClock(samples).offset;
 }
 

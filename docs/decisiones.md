@@ -439,14 +439,18 @@ Un invitado pedía `/auth/refresh` en cada visita y recibía un 401, que ensucia
 
 ### La IP del cliente pasa firmada por el proxy
 
-La API se sirve bajo el dominio de la web (`/api/*`), así la cookie del refresh es de primera parte. En producción eso significa Vercel → Render, y Vercel no documenta si conserva la IP del cliente en un rewrite externo. Si no la conserva, todas las personas compartirían el límite de 10 logins por minuto.
+La API se sirve bajo el dominio de la web (`/api/*`), así la cookie del refresh es de primera parte. En producción eso significa Vercel → Render. Si el server solo viera la IP de la conexión, todas las personas compartirían el límite de 10 logins por minuto.
 
-Por eso el proxy (`src/proxy.ts`, que reemplaza el rewrite de `next.config`):
+Cómo funciona:
 
-- manda la IP del cliente en `x-tecleo-client-ip`, junto con un secreto compartido (`PROXY_SECRET`);
-- borra antes esas cabeceras si llegan desde afuera.
+- Un route handler (`app/api/[...path]/route.ts`) reenvía cada petición al server con su propio `fetch`.
+- Agrega la IP del cliente en `x-tecleo-client-ip`, junto con un secreto compartido (`PROXY_SECRET`).
+- Borra antes esas cabeceras si llegan desde afuera.
+- El server solo acepta esa IP si el secreto coincide (comparación en tiempo constante). Sin el secreto usa la IP de la conexión.
 
-El server solo acepta esa IP si el secreto coincide (comparación en tiempo constante). Sin el secreto usa la IP de la conexión, como antes.
+`/health` dice de dónde salió la IP (`clientIpSource`: `proxy` o `connection`), así se comprueba el despliegue sin exponer ninguna IP.
+
+El primer intento fue un rewrite desde `proxy.ts`. En local funcionaba, pero en Vercel las cabeceras agregadas no llegaban al destino externo: el contador de rate limit era el mismo para dos clientes distintos (IPv4 e IPv6 de la misma persona). Con el handler, el reenvío no depende de cómo Vercel trate los rewrites.
 
 ### Despliegue
 
@@ -473,3 +477,27 @@ Encontraron dos fallos reales, ya arreglados:
 
 - los grupos de botones de Configuración no se partían en varias líneas y desbordaban la página;
 - el menú móvil quedaba abierto, tapando la página nueva, al tocar un enlace.
+
+### Entrar a una sala sin esperar al servidor de la web
+
+Medido contra la demo, crear una sala tardaba ~4,5 s hasta ver el lobby:
+
+- ~1,2 s abriendo la conexión con Render, que empezaba recién al hacer clic;
+- ~0,9 s de pings de reloj, que iban en serie;
+- ~1,6 s pidiéndole a Vercel que renderizara `/room/CÓDIGO`, una página dinámica que no se puede precargar.
+
+Tres cambios:
+
+- La página de salas abre la conexión (y mide el reloj) al cargar.
+- Los 5 pings salen en paralelo; igual se usa el de menor ida y vuelta.
+- La sala se muestra en la misma página y la URL pasa a `/room/CÓDIGO` con `history.pushState`, sin otra petición al servidor. Recargar esa URL abre la página de la sala como siempre.
+
+### E2E contra la demo
+
+Con `E2E_BASE_URL` la suite corre contra un despliegue sin levantar nada local. Contra la demo se corren solo los tests de invitado: práctica, carreras, multijugador, pantallas, responsive y fluidez. Los de cuentas crearían cuentas de prueba en producción.
+
+Al cerrar la Fase 7:
+
+- Los 63 tests de invitado pasaron contra https://tecleo-nine.vercel.app, incluida la carrera con dos navegadores contra Render.
+- Lighthouse en la demo dio mediana 99 en rendimiento y 100 en accesibilidad, buenas prácticas y SEO.
+- Crear una sala tarda 0,9–2,9 s hasta ver el lobby.

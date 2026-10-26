@@ -7,20 +7,21 @@ La especificación vive en `docs/spec.md`; el plan aprobado, en `docs/plan.md`; 
 
 Requisitos: Node 24 (`.nvmrc`), pnpm 10.30 (fijado en `packageManager`), Docker.
 
-| Qué                                           | Comando                                                                                           |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Instalar                                      | `pnpm install`                                                                                    |
-| Base de datos local                           | `pnpm db:up` / `pnpm db:down` (Postgres 17 en `localhost:5440`, bases `tecleo` y `tecleo_test`)   |
-| Desarrollo (web + server + paquetes en watch) | `pnpm dev` → web en http://localhost:3100, server en http://localhost:4100 (Swagger en `/docs`)   |
-| Todo lo de CI                                 | `pnpm check` (format:check + lint + typecheck + test) y `pnpm build`                              |
-| Solo un workspace                             | `pnpm --filter @tecleo/engine test` (o `lint`, `typecheck`, `build`, `dev`)                       |
-| Formatear                                     | `pnpm format`                                                                                     |
-| E2E (Playwright)                              | `pnpm e2e` (reutiliza `pnpm dev` si está corriendo; con `CI=1` levanta el build con `next start`) |
-| Regenerar corpus y listas de palabras         | `pnpm --filter @tecleo/content build:corpus` (descarga a `packages/content/.cache/`)              |
-| Dar o quitar el rol de administrador          | `pnpm --filter @tecleo/server admin:grant <correo> [--revoke]`                                    |
-| Todo desde cero en local (un comando)         | `pnpm local` (instala, crea los `.env`, Postgres, migra, carga textos y `pnpm dev`)               |
-| Lighthouse del inicio                         | `pnpm lighthouse [url]` con la web en marcha (mediana de 3 corridas, objetivo ≥ 90)               |
-| Capturas del README                           | `pnpm --filter @tecleo/e2e screenshots` con web y server en marcha (`docs/images`)                |
+| Qué                                           | Comando                                                                                            |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Instalar                                      | `pnpm install`                                                                                     |
+| Base de datos local                           | `pnpm db:up` / `pnpm db:down` (Postgres 17 en `localhost:5440`, bases `tecleo` y `tecleo_test`)    |
+| Desarrollo (web + server + paquetes en watch) | `pnpm dev` → web en http://localhost:3100, server en http://localhost:4100 (Swagger en `/docs`)    |
+| Todo lo de CI                                 | `pnpm check` (format:check + lint + typecheck + test) y `pnpm build`                               |
+| Solo un workspace                             | `pnpm --filter @tecleo/engine test` (o `lint`, `typecheck`, `build`, `dev`)                        |
+| Formatear                                     | `pnpm format`                                                                                      |
+| E2E (Playwright)                              | `pnpm e2e` (reutiliza `pnpm dev` si está corriendo; con `CI=1` levanta el build con `next start`)  |
+| E2E contra un despliegue                      | `E2E_BASE_URL=https://tecleo-nine.vercel.app pnpm e2e <specs de invitado>` (no levanta nada local) |
+| Regenerar corpus y listas de palabras         | `pnpm --filter @tecleo/content build:corpus` (descarga a `packages/content/.cache/`)               |
+| Dar o quitar el rol de administrador          | `pnpm --filter @tecleo/server admin:grant <correo> [--revoke]`                                     |
+| Todo desde cero en local (un comando)         | `pnpm local` (instala, crea los `.env`, Postgres, migra, carga textos y `pnpm dev`)                |
+| Lighthouse del inicio                         | `pnpm lighthouse [url]` con la web en marcha (mediana de 3 corridas, objetivo ≥ 90)                |
+| Capturas del README                           | `pnpm --filter @tecleo/e2e screenshots` con web y server en marcha (`docs/images`)                 |
 
 Los puertos 3100/4100/5440 evitan choques con otros proyectos locales (3000 y 5432 suelen estar ocupados).
 
@@ -61,7 +62,7 @@ e2e                    @tecleo/e2e — Playwright
 
 ### Web
 
-- Rutas en `src/app/[locale]/…` (`/es`, `/en`); el layout raíz es `app/[locale]/layout.tsx` y lee el idioma con `next/root-params`. `src/proxy.ts` (antes "middleware") redirige las rutas sin idioma y reenvía `/api/*` al server (`SERVER_URL`) con la IP del cliente firmada (`PROXY_SECRET`). Mensajes en `messages/{es,en}.json` (mismas claves, lo verifica un test).
+- Rutas en `src/app/[locale]/…` (`/es`, `/en`); el layout raíz es `app/[locale]/layout.tsx` y lee el idioma con `next/root-params`. `src/proxy.ts` (antes "middleware") redirige las rutas sin idioma. `app/api/[...path]/route.ts` reenvía `/api/*` al server (`SERVER_URL`) con la IP del cliente firmada (`PROXY_SECRET`). Mensajes en `messages/{es,en}.json` (mismas claves, lo verifica un test).
 - Temas: `src/theme/themes.ts` es la única fuente de los tokens; genera las variables CSS (inyectadas en `<head>`) y un test verifica contraste WCAG AA. El tema activo es `data-theme` en `<html>`; un script en `<head>` lo aplica antes del primer pintado.
 - Preferencias: `src/settings/settings-store.ts` (Zustand + `localStorage`, esquema `userSettingsSchema` de `@tecleo/shared`). Los stores persistidos usan `skipHydration`, se rehidratan tras montar y guardan con `readFirstStorage()` (`lib/persist-storage.ts`), que no escribe hasta haber leído.
 - Componentes base: shadcn/ui (Radix) en `src/components/ui` — generados con la CLI, se pueden editar. Layout en `src/components/layout`.
@@ -105,12 +106,14 @@ e2e                    @tecleo/e2e — Playwright
 | 4 – Backend y cuentas     | ✅ completa | Prisma + auth con refresh rotativo, resultados validados por el motor, perfil con gráficas y mapa de calor, migración de invitado; 26 tests de integración, 46 E2E        |
 | 5 – Multijugador          | ✅ completa | Socket.IO autoritativo, salas privadas con revancha, matchmaking con bots, reloj sincronizado, reconexión, antitrampa en vivo; 49 tests del server, 52 E2E                |
 | 6 – Contenido extra       | ✅ completa | XP/niveles, 17 logros, avatares desbloqueables, rankings, desafío diario, repeticiones, fantasma, práctica dirigida, 👍/👎 y panel de textos; 56 tests del server, 62 E2E |
-| 7 – Pulido y despliegue   | ⏳ en curso |                                                                                                                                                                           |
+| 7 – Pulido y despliegue   | ✅ completa | Demo en https://tecleo-nine.vercel.app (Vercel + Render + Neon); Lighthouse en la demo: 99 rendimiento, 100 accesibilidad; 63 E2E de invitado pasan contra la demo        |
 
 ### Pendiente explícito
 
 - Teclas muertas con teclado físico: el camino de composición está cubierto con eventos sintéticos (unit + E2E), falta confirmarlo a mano en macOS/Windows con distribución española y latinoamericana.
 - OAuth con Google (opcional en la spec): no implementado; requiere credenciales para probarlo.
 - La práctica y las carreras contra bots usan el corpus empaquetado: los textos agregados o desactivados en el panel solo afectan a los modos en línea (salas, desafío diario).
+- Despliegue: la web se publica con `vercel deploy --prod` desde la raíz (el proyecto de Vercel no está conectado al repo); el server de Render sí se despliega solo con cada push a `main`.
+- Render Free duerme el server a los 15 min sin tráfico: la primera visita después tarda ~1 min en tener salas, cuentas y rankings (práctica y bots funcionan mientras tanto).
 - Salas en memoria de un solo proceso: escalar a varias instancias requiere un `RoomStore` compartido (Redis) y el adaptador de Redis de Socket.IO (ver `docs/decisiones.md`).
 - Los resultados en línea de invitados no se guardan (ni local ni en el servidor).

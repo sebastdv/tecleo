@@ -61,7 +61,7 @@ El proyecto `tecleo` ya existe y está publicado en https://tecleo-nine.vercel.a
 ### 5. Cerrar el círculo
 
 1. Después de cargar `PROXY_SECRET` en Vercel, vuelve a desplegar la web (`vercel deploy --prod`) para que la tome.
-2. Comprueba que `https://<web>/api/health` responde `{"status":"ok"}`. Eso confirma que el proxy de la web llega al server.
+2. Comprueba que `https://<web>/api/health` responde `"status":"ok"` y `"clientIpSource":"proxy"`. Lo primero confirma que la web llega al server; lo segundo, que el `PROXY_SECRET` coincide en los dos lados.
 3. Para dar el rol de administrador, corre desde tu máquina, contra la base de Neon:
 
    ```bash
